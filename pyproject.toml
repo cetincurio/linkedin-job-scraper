@@ -85,7 +85,6 @@ test = [
     "pytest-xdist>=3.6.0",
 ]
 types = [
-    "mypy>=1.15.0",
     "pyright>=1.1.400",
 ]
 docs = [
@@ -208,30 +207,6 @@ docstring-code-format = true
 docstring-code-line-length = 80
 
 # =============================================================================
-# MYPY - Static Type Checker
-# https://mypy.readthedocs.io/en/stable/config_file.html
-# =============================================================================
-[tool.mypy]
-python_version = "3.12"
-strict = true
-warn_return_any = true
-warn_unused_configs = true
-warn_redundant_casts = true
-warn_unused_ignores = false
-show_error_codes = true
-show_column_numbers = true
-pretty = true
-
-[[tool.mypy.overrides]]
-module = [
-    "playwright.*",
-    "playwright_stealth.*",
-    "textual.*",
-    "aiofiles.*",
-]
-ignore_missing_imports = true
-
-# =============================================================================
 # PYTEST - Testing Framework
 # https://docs.pytest.org/en/stable/reference/customize.html
 # =============================================================================
@@ -313,7 +288,6 @@ per_rule_ignores = { DEP002 = [
     "mkdocs-literate-nav",
     "mkdocs-material",
     "mkdocstrings",
-    "mypy",
     "pre-commit",
     "pyright",
     "pytest",

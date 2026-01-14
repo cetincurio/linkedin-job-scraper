@@ -41,8 +41,8 @@ jobs:
       - name: Run Ruff formatter check
         run: uv run ruff format --check src/ tests/
 
-      - name: Run mypy
-        run: uv run mypy src/
+      - name: Run Pyright type checker
+        run: uv run pyright src/
 
   # ==========================================================================
   # Run tests
