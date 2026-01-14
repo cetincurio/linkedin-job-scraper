@@ -42,7 +42,6 @@ Created a proper `pyrightconfig.json` with comprehensive excludes:
     "**/dist",
     "**/*.egg-info",
     "**/site-packages",
-    "**/.mypy_cache",
     "**/.pytest_cache",
     "**/.ruff_cache",
     "**/htmlcov",
@@ -156,9 +155,6 @@ build-backend = "hatchling.build"
 # =============================================================================
 [tool.coverage.run]
 # https://coverage.readthedocs.io/
-
-[tool.mypy]
-# https://mypy.readthedocs.io/
 
 [tool.pytest.ini_options]
 # https://docs.pytest.org/

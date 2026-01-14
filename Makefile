@@ -47,7 +47,7 @@ format:
 
 # Run type checker
 type-check:
-	uv run mypy src/
+	uv run pyright src/
 
 # Run all checks (lint + type-check + test)
 check: lint type-check test
@@ -66,7 +66,6 @@ clean:
 	rm -rf build/
 	rm -rf *.egg-info/
 	rm -rf .pytest_cache/
-	rm -rf .mypy_cache/
 	rm -rf .ruff_cache/
 	rm -rf htmlcov/
 	rm -rf .coverage

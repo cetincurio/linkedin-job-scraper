@@ -115,7 +115,7 @@ uv run ruff format src/ tests/
 uv run ruff check --fix src/ tests/
 
 # Type checking
-uv run mypy src/
+uv run pyright src/
 ```
 
 ### Guidelines
@@ -223,7 +223,7 @@ class TestJobId:
    ```bash
    uv run ruff format src/ tests/
    uv run ruff check src/ tests/
-   uv run mypy src/
+   uv run pyright src/
    uv run pytest
    ```
 

@@ -265,7 +265,7 @@ make check
 # Or individually:
 uv run ruff check src/ tests/    # Lint
 uv run ruff format src/ tests/   # Format
-uv run mypy src/                 # Type check
+uv run pyright src/              # Type check
 uv run pytest                    # Test
 uv run pytest --cov              # Test with coverage
 ```
@@ -278,7 +278,7 @@ make dev         # Setup dev environment
 make test        # Run tests
 make lint        # Run linter
 make format      # Format code
-make type-check  # Run mypy
+make type-check  # Run pyright
 make docs        # Build documentation
 make build       # Build package
 ```
