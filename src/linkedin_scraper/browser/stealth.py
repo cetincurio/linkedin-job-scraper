@@ -2,6 +2,7 @@
 
 import random
 from dataclasses import dataclass, field
+from typing import Any
 
 from playwright.async_api import BrowserContext, Page
 from playwright_stealth import Stealth
@@ -75,7 +76,7 @@ class StealthConfig:
     webgl_vendor: bool = True
     permissions_api: bool = True
 
-    def get_context_options(self) -> dict:
+    def get_context_options(self) -> dict[str, Any]:
         """Get browser context options for Playwright."""
         return {
             "user_agent": self.user_agent,

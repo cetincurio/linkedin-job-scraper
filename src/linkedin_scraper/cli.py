@@ -11,7 +11,7 @@ from rich.panel import Panel
 from rich.table import Table
 
 from linkedin_scraper import __version__
-from linkedin_scraper.config import get_settings
+from linkedin_scraper.config import Settings, get_settings
 from linkedin_scraper.logging_config import setup_logging
 from linkedin_scraper.models.job import JobIdSource
 from linkedin_scraper.scrapers.detail import JobDetailScraper
@@ -377,7 +377,7 @@ async def _run_loop(
     cycles: int,
     search_pages: int,
     scrape_limit: int,
-    settings,
+    settings: Settings,
 ) -> None:
     """Run the search->scrape loop."""
     search_scraper = JobSearchScraper(settings)

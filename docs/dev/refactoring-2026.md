@@ -22,9 +22,11 @@ This document captures the complete refactoring process applied to this project,
 ## 1. Type Checking with Pyright
 
 ### Problem
+
 Pyright was failing due to missing/invalid config.
 
 ### Solution
+
 Created a proper `pyrightconfig.json` with comprehensive excludes:
 
 ```json
@@ -53,6 +55,7 @@ Created a proper `pyrightconfig.json` with comprehensive excludes:
 ```
 
 ### Commands
+
 ```bash
 uv run pyright src/
 ```
@@ -62,6 +65,7 @@ uv run pyright src/
 ## 2. Git Repository Setup
 
 ### Initialize
+
 ```bash
 git init
 ```
@@ -69,6 +73,7 @@ git init
 ### Reorganized `.gitignore`
 
 Structured with clear sections:
+
 - Python artifacts
 - Virtual environments
 - IDE/Editor files
@@ -167,9 +172,11 @@ build-backend = "hatchling.build"
 ## 5. Testing with pytest-asyncio
 
 ### Problem
+
 `pytest-asyncio` 1.x changed config options.
 
 ### Solution
+
 Minimal config that works:
 
 ```toml
@@ -183,6 +190,7 @@ addopts = ["-ra", "-q", "--strict-markers", "--strict-config"]
 **Note**: `asyncio_default_fixture_loop_scope` is NOT supported in pytest-asyncio 1.3.0.
 
 ### Commands
+
 ```bash
 # Sync test dependencies first
 uv sync --extra test
@@ -196,12 +204,15 @@ uv run pytest -n auto --tb=short
 ## 6. Pre-commit Simplification
 
 ### Problem
+
 Multiple tools doing the same thing:
+
 - `bandit` → duplicates ruff's `S` rules
 - `reorder-python-imports` → duplicates ruff's `I` rules
 - `pyupgrade` → duplicates ruff's `UP` rules
 
 ### Solution
+
 Use **ruff as the single tool** for everything:
 
 ```yaml
@@ -236,6 +247,7 @@ repos:
 ```
 
 ### Commands
+
 ```bash
 pre-commit clean && pre-commit install
 pre-commit run --all-files
@@ -272,17 +284,21 @@ uv run python -m mkdocs serve --dev-addr 127.0.0.1:8000
 ## 8. Multi-Account Git Setup
 
 ### Problem
+
 Multiple GitHub accounts on one machine.
 
 ### Solution
+
 Per-repository config with SSH host aliases.
 
 ### Step 1: Generate SSH Key
+
 ```bash
 ssh-keygen -t ed25519 -C "your-email@example.com" -f ~/.ssh/id_ed25519_github_account2
 ```
 
 ### Step 2: Configure SSH (`~/.ssh/config`)
+
 ```
 Host github-account2
     HostName github.com
@@ -292,23 +308,27 @@ Host github-account2
 ```
 
 ### Step 3: Add Key to GitHub
+
 ```bash
 cat ~/.ssh/id_ed25519_github_account2.pub
 # Copy → GitHub → Settings → SSH Keys → New
 ```
 
 ### Step 4: Set Local Git Config (per-repo)
+
 ```bash
 git config user.name "your-username"
 git config user.email "your-email@example.com"
 ```
 
 ### Step 5: Add Remote with Alias
+
 ```bash
 git remote add origin git@github-account2:username/repo.git
 ```
 
 ### Step 6: Verify & Push
+
 ```bash
 ssh -T git@github-account2  # Test connection
 git push -u origin main

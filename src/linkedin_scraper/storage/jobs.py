@@ -228,7 +228,7 @@ class JobStorage:
         """Iterate over all job detail files."""
         return self._settings.job_details_dir.glob("*.json")
 
-    async def get_stats(self) -> dict:
+    async def get_stats(self) -> dict[str, int]:
         """Get storage statistics."""
         search_ids = await self.get_job_ids(JobIdSource.SEARCH)
         recommended_ids = await self.get_job_ids(JobIdSource.RECOMMENDED)

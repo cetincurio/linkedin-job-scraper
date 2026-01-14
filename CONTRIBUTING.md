@@ -84,6 +84,7 @@ type(scope): description
 ```
 
 Types:
+
 - `feat`: New feature
 - `fix`: Bug fix
 - `docs`: Documentation changes
@@ -93,6 +94,7 @@ Types:
 - `chore`: Maintenance tasks
 
 Examples:
+
 ```
 feat(scraper): add support for salary extraction
 fix(storage): handle duplicate job IDs correctly
@@ -210,12 +212,14 @@ class TestJobId:
 ## Pull Request Process
 
 1. **Update your branch** with the latest main:
+
    ```bash
    git fetch origin
    git rebase origin/main
    ```
 
 2. **Run all checks locally**:
+
    ```bash
    uv run ruff format src/ tests/
    uv run ruff check src/ tests/
@@ -224,6 +228,7 @@ class TestJobId:
    ```
 
 3. **Push and create PR**:
+
    ```bash
    git push origin feature/your-feature-name
    ```

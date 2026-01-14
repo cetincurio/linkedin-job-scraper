@@ -146,7 +146,7 @@ class LoopPanel(Container):
         yield ProgressBar(id="loop-progress", total=100, show_eta=False)
 
 
-class LinkedInScraperApp(App):
+class LinkedInScraperApp(App[None]):
     """Main TUI application for LinkedIn Job Scraper."""
 
     CSS = """
@@ -245,13 +245,13 @@ class LinkedInScraperApp(App):
         Binding("d", "toggle_dark", "Toggle Dark Mode"),
     ]
 
-    TITLE: ClassVar[str] = "LinkedIn Job Scraper"  # type: ignore[assignment]
+    TITLE: ClassVar[str] = "LinkedIn Job Scraper"  # type: ignore[misc]
     SUB_TITLE = "Educational Project"
 
     def __init__(self) -> None:
         super().__init__()
         self._settings = get_settings()
-        self._running_task: asyncio.Task | None = None
+        self._running_task: asyncio.Task[None] | None = None
         setup_logging(log_dir=self._settings.log_dir)
 
     def compose(self) -> ComposeResult:
@@ -280,10 +280,10 @@ class LinkedInScraperApp(App):
         table = self.query_one("#results-table", DataTable)
         table.add_columns("Job ID", "Title", "Company", "Location")
 
-        self._log("[bold green]LinkedIn Job Scraper started[/bold green]")
-        self._log("Use the panels on the left to search and scrape jobs.")
+        self.log_message("[bold green]LinkedIn Job Scraper started[/bold green]")
+        self.log_message("Use the panels on the left to search and scrape jobs.")
 
-    def _log(self, message: str) -> None:
+    def log_message(self, message: str) -> None:
         """Add a message to the log panel."""
         log = self.query_one("#log-panel", RichLog)
         timestamp = datetime.now().strftime("%H:%M:%S")
@@ -297,13 +297,13 @@ class LinkedInScraperApp(App):
     def action_refresh_stats(self) -> None:
         """Action to refresh statistics."""
         self._running_task = asyncio.create_task(self._refresh_stats())
-        self._log("Stats refreshed")
+        self.log_message("Stats refreshed")
 
     def action_clear_log(self) -> None:
         """Clear the log panel."""
         log = self.query_one("#log-panel", RichLog)
         log.clear()
-        self._log("[dim]Log cleared[/dim]")
+        self.log_message("[dim]Log cleared[/dim]")
 
     def action_toggle_dark(self) -> None:
         """Toggle dark mode."""
@@ -321,14 +321,14 @@ class LinkedInScraperApp(App):
         max_pages = int(max_pages_input.value or "10")
 
         if not keyword:
-            self._log("[red]Error: Please enter a search keyword[/red]")
+            self.log_message("[red]Error: Please enter a search keyword[/red]")
             return
 
         if not country or country == Select.BLANK:
-            self._log("[red]Error: Please select a country[/red]")
+            self.log_message("[red]Error: Please select a country[/red]")
             return
 
-        self._log(f"[yellow]Starting search: '{keyword}' in {country}...[/yellow]")
+        self.log_message(f"[yellow]Starting search: '{keyword}' in {country}...[/yellow]")
         self._run_search(keyword, str(country), max_pages)
 
     @work(exclusive=True)
@@ -346,13 +346,13 @@ class LinkedInScraperApp(App):
             scraper = JobSearchScraper(self._settings)
             result = await scraper.run(keyword=keyword, country=country, max_pages=max_pages)
 
-            self._log(f"[green]Search complete: {result.total_found} jobs found[/green]")
+            self.log_message(f"[green]Search complete: {result.total_found} jobs found[/green]")
             progress.update(progress=100)
 
             await self._refresh_stats()
 
         except Exception as e:
-            self._log(f"[red]Search error: {e}[/red]")
+            self.log_message(f"[red]Search error: {e}[/red]")
             logger.exception("Search error")
 
         finally:
@@ -370,7 +370,9 @@ class LinkedInScraperApp(App):
         limit = int(limit_input.value or "10")
         job_id = job_id_input.value.strip() or None
 
-        self._log(f"[yellow]Starting scrape (limit={limit}, source={source or 'all'})...[/yellow]")
+        self.log_message(
+            f"[yellow]Starting scrape (limit={limit}, source={source or 'all'})...[/yellow]"
+        )
         self._run_scrape(source, limit, job_id)
 
     @work(exclusive=True)
@@ -412,7 +414,7 @@ class LinkedInScraperApp(App):
                     (job.location or "N/A")[:20],
                 )
 
-            self._log(f"[green]Scrape complete: {len(results)} jobs scraped[/green]")
+            self.log_message(f"[green]Scrape complete: {len(results)} jobs scraped[/green]")
             progress.update(progress=100)
 
             await self._refresh_stats()
@@ -422,7 +424,7 @@ class LinkedInScraperApp(App):
             tabbed.active = "tab-results"
 
         except Exception as e:
-            self._log(f"[red]Scrape error: {e}[/red]")
+            self.log_message(f"[red]Scrape error: {e}[/red]")
             logger.exception("Scrape error")
 
         finally:
@@ -441,14 +443,16 @@ class LinkedInScraperApp(App):
         cycles = int(cycles_input.value or "3")
 
         if not keyword:
-            self._log("[red]Error: Please enter a search keyword[/red]")
+            self.log_message("[red]Error: Please enter a search keyword[/red]")
             return
 
         if not country or country == Select.BLANK:
-            self._log("[red]Error: Please select a country[/red]")
+            self.log_message("[red]Error: Please select a country[/red]")
             return
 
-        self._log(f"[yellow]Starting loop: '{keyword}' in {country}, {cycles} cycles...[/yellow]")
+        self.log_message(
+            f"[yellow]Starting loop: '{keyword}' in {country}, {cycles} cycles...[/yellow]"
+        )
         self._run_loop(keyword, str(country), cycles)
 
     @work(exclusive=True)
@@ -467,29 +471,29 @@ class LinkedInScraperApp(App):
 
             for cycle in range(1, cycles + 1):
                 progress.update(progress=(cycle - 1) * 100 // cycles)
-                self._log(f"[blue]═══ Cycle {cycle}/{cycles} ═══[/blue]")
+                self.log_message(f"[blue]═══ Cycle {cycle}/{cycles} ═══[/blue]")
 
                 # Search
-                self._log("[yellow]Searching...[/yellow]")
+                self.log_message("[yellow]Searching...[/yellow]")
                 result = await search_scraper.run(keyword=keyword, country=country, max_pages=5)
-                self._log(f"Found {result.total_found} jobs")
+                self.log_message(f"Found {result.total_found} jobs")
 
                 # Scrape
-                self._log("[yellow]Scraping details...[/yellow]")
+                self.log_message("[yellow]Scraping details...[/yellow]")
                 details = await detail_scraper.run(limit=10, extract_recommended=True)
-                self._log(f"Scraped {len(details)} details")
+                self.log_message(f"Scraped {len(details)} details")
 
                 await self._refresh_stats()
 
                 if cycle < cycles:
-                    self._log("[dim]Waiting before next cycle...[/dim]")
+                    self.log_message("[dim]Waiting before next cycle...[/dim]")
                     await asyncio.sleep(3)
 
-            self._log("[green]Loop completed![/green]")
+            self.log_message("[green]Loop completed![/green]")
             progress.update(progress=100)
 
         except Exception as e:
-            self._log(f"[red]Loop error: {e}[/red]")
+            self.log_message(f"[red]Loop error: {e}[/red]")
             logger.exception("Loop error")
 
         finally:

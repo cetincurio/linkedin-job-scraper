@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+
 - Initial project structure
 - Feature 1: Job search with pagination and job ID extraction
 - Feature 2: Job detail scraper with comprehensive data extraction
@@ -24,6 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Full test suite with pytest
 
 ### Security
+
 - No hardcoded credentials
 - Rate limiting to respect server resources
 - Educational use disclaimer
@@ -31,6 +33,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.1.0] - 2026-01-13
 
 ### Added
+
 - Initial release
 - Core scraping functionality
 - CLI and TUI interfaces
