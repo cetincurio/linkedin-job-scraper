@@ -85,6 +85,37 @@ jobs:
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
+  # # ==========================================================================
+  # # Build package
+  # # ==========================================================================
+  # build:
+  #   name: Build Package
+  #   runs-on: ubuntu-latest
+  #   needs: [lint, test]
+
+  #   steps:
+  #     - uses: actions/checkout@v4
+
+  #     - name: Install uv
+  #       uses: astral-sh/setup-uv@v4
+  #       with:
+  #         version: "latest"
+
+  #     - name: Set up Python
+  #       run: uv python install ${{ env.PYTHON_VERSION }
+
+  #     - name: Build package
+  #       run: uv build
+
+  #     - name: Check package
+  #       run: uv run --with twine twine check dist/*
+
+  #     - name: Upload artifacts
+  #       uses: actions/upload-artifact@v4
+  #       with:
+  #         name: dist
+  #         path: dist/
+
   # ==========================================================================
   # Integration tests (optional, requires browser)
   # ==========================================================================
