@@ -1,0 +1,26 @@
+{
+  "include": ["src"],
+  "exclude": [
+    "**/__pycache__",
+    "**/.venv",
+    "**/venv",
+    "**/.git",
+    "**/.mypy_cache",
+    "**/.pytest_cache",
+    "**/.ruff_cache",
+    "**/node_modules",
+    "**/dist",
+    "**/build",
+    "**/*.egg-info",
+    "**/htmlcov",
+    "**/.coverage",
+    "**/docs/_build",
+    "**/site",
+    "**/.tox",
+    "**/.nox"
+  ],
+  "pythonVersion": "3.12",
+  "typeCheckingMode": "standard",
+  "reportMissingImports": false,
+  "reportMissingTypeStubs": false
+}

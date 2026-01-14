@@ -1,0 +1,58 @@
+# API Reference
+
+## Modules Overview
+
+### Scrapers
+
+::: linkedin_scraper.scrapers.search.JobSearchScraper
+    options:
+      show_source: false
+      heading_level: 3
+
+::: linkedin_scraper.scrapers.detail.JobDetailScraper
+    options:
+      show_source: false
+      heading_level: 3
+
+::: linkedin_scraper.scrapers.recommended.RecommendedJobsScraper
+    options:
+      show_source: false
+      heading_level: 3
+
+### Models
+
+::: linkedin_scraper.models.job.JobId
+    options:
+      show_source: false
+      heading_level: 3
+
+::: linkedin_scraper.models.job.JobDetail
+    options:
+      show_source: false
+      heading_level: 3
+
+### Browser
+
+::: linkedin_scraper.browser.context.BrowserManager
+    options:
+      show_source: false
+      heading_level: 3
+
+::: linkedin_scraper.browser.human.HumanBehavior
+    options:
+      show_source: false
+      heading_level: 3
+
+### Storage
+
+::: linkedin_scraper.storage.jobs.JobStorage
+    options:
+      show_source: false
+      heading_level: 3
+
+### Configuration
+
+::: linkedin_scraper.config.Settings
+    options:
+      show_source: false
+      heading_level: 3
