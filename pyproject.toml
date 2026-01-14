@@ -94,9 +94,18 @@ docs = [
     "mkdocs-material>=9.6.0",
     "mkdocstrings[python]>=0.29.0",
 ]
+ml = [
+    "polars>=1.20.0",
+    "sentence-transformers>=3.4.0",
+    "chromadb>=0.6.0",
+    "fastapi>=0.115.0",
+    "uvicorn>=0.34.0",
+    "streamlit>=1.41.0",
+]
 all = [
     "linkedin-job-scraper[dev]",
     "linkedin-job-scraper[docs]",
+    "linkedin-job-scraper[ml]",
 ]
 
 # -----------------------------------------------------------------------------
@@ -192,6 +201,18 @@ ignore = [
 "src/**/cli.py" = [
     "B008",     # Function call in argument defaults (typer pattern)
 ]
+"src/**/ml/**/*.py" = [
+    "PLC0415",  # Lazy imports for optional ML dependencies
+]
+"src/**/api/**/*.py" = [
+    "PLC0415",  # Lazy imports for optional ML dependencies
+    "PLR0915",  # Too many statements (FastAPI route definitions)
+]
+"src/**/dashboard.py" = [
+    "PLC0415",  # Lazy imports for optional ML dependencies
+    "PLR0912",  # Too many branches (Streamlit UI logic)
+    "PLR0915",  # Too many statements (Streamlit UI logic)
+]
 
 [tool.ruff.lint.isort]
 known-first-party = ["linkedin_scraper"]
@@ -250,6 +271,10 @@ omit = [
     # Interactive modules
     "*/tui.py",
     "*/cli.py",
+    # ML modules (optional dependencies - polars, chromadb, etc.)
+    "*/ml/*",
+    "*/api/*",
+    "*/dashboard.py",
 ]
 
 [tool.coverage.report]

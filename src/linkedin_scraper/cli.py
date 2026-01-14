@@ -437,5 +437,176 @@ def tui() -> None:
     app_instance.run()
 
 
+# =============================================================================
+# ML Subcommands
+# =============================================================================
+ml_app = typer.Typer(
+    name="ml",
+    help="ML and analytics commands for job data",
+    no_args_is_help=True,
+)
+app.add_typer(ml_app)
+
+
+@ml_app.command("export")
+def ml_export(
+    format: Annotated[
+        str,
+        typer.Option("--format", "-f", help="Export format: parquet or jsonl"),
+    ] = "parquet",
+    output: Annotated[
+        Path | None,
+        typer.Option("--output", "-o", help="Output file path"),
+    ] = None,
+) -> None:
+    """Export job data to ML-ready formats."""
+    from linkedin_scraper.ml.export import JobDataExporter  # noqa: PLC0415
+
+    settings = get_settings()
+    exporter = JobDataExporter(settings)
+
+    try:
+        if format == "parquet":
+            path = exporter.export_parquet(output)
+        elif format == "jsonl":
+            path = exporter.export_jsonl(output)
+        else:
+            console.print(f"[red]Unknown format: {format}[/red]")
+            raise typer.Exit(1)
+
+        console.print(f"[green]✓ Exported to:[/green] {path}")
+
+        stats = exporter.get_stats()
+        console.print(f"  Jobs: {stats['total_jobs']}")
+        console.print(f"  Companies: {stats['unique_companies']}")
+
+    except Exception as e:
+        console.print(f"[red]Export error: {e}[/red]")
+        raise typer.Exit(1) from e
+
+
+@ml_app.command("index")
+def ml_index() -> None:
+    """Index job data into vector store for semantic search."""
+    from linkedin_scraper.ml.vectorstore import JobVectorStore  # noqa: PLC0415
+
+    settings = get_settings()
+    vectorstore = JobVectorStore(settings)
+
+    with console.status("[bold green]Indexing jobs..."):
+        count = vectorstore.index_jobs()
+
+    console.print(f"[green]✓ Indexed {count} new jobs[/green]")
+
+    stats = vectorstore.get_stats()
+    console.print(f"  Total indexed: {stats['total_documents']}")
+
+
+@ml_app.command("search")
+def ml_search(
+    query: Annotated[str, typer.Argument(help="Search query")],
+    n_results: Annotated[
+        int,
+        typer.Option("--limit", "-n", help="Number of results"),
+    ] = 10,
+) -> None:
+    """Search for similar jobs using semantic similarity."""
+    from linkedin_scraper.ml.vectorstore import JobVectorStore  # noqa: PLC0415
+
+    settings = get_settings()
+    vectorstore = JobVectorStore(settings)
+
+    results = vectorstore.search(query, n_results=n_results)
+
+    if not results:
+        console.print("[yellow]No results found. Try indexing jobs first.[/yellow]")
+        return
+
+    table = Table(title=f"Search: '{query}'", show_header=True)
+    table.add_column("Score", style="cyan", justify="right")
+    table.add_column("Title", style="white")
+    table.add_column("Company", style="green")
+    table.add_column("Location", style="blue")
+
+    for r in results:
+        table.add_row(
+            f"{r['score']:.2f}",
+            r["metadata"].get("title", "N/A")[:40],
+            r["metadata"].get("company_name", "N/A")[:25],
+            r["metadata"].get("location", "N/A")[:20],
+        )
+
+    console.print(table)
+
+
+@ml_app.command("stats")
+def ml_stats() -> None:
+    """Show ML data statistics."""
+    from linkedin_scraper.ml.export import JobDataExporter  # noqa: PLC0415
+    from linkedin_scraper.ml.vectorstore import JobVectorStore  # noqa: PLC0415
+
+    settings = get_settings()
+    exporter = JobDataExporter(settings)
+    vectorstore = JobVectorStore(settings)
+
+    export_stats = exporter.get_stats()
+    vs_stats = vectorstore.get_stats()
+
+    table = Table(title="ML Data Statistics", show_header=True)
+    table.add_column("Metric", style="cyan")
+    table.add_column("Value", style="white", justify="right")
+
+    table.add_row("Total Jobs", str(export_stats.get("total_jobs", 0)))
+    table.add_row("Unique Companies", str(export_stats.get("unique_companies", 0)))
+    table.add_row("Unique Locations", str(export_stats.get("unique_locations", 0)))
+    table.add_row("Indexed in Vector Store", str(vs_stats.get("total_documents", 0)))
+    table.add_row("Avg Description Length", str(export_stats.get("avg_description_length", 0)))
+
+    console.print(table)
+
+    # Top skills
+    top_skills = export_stats.get("top_skills", [])
+    if top_skills:
+        console.print("\n[bold]Top Skills:[/bold]")
+        for skill, count in top_skills[:10]:
+            console.print(f"  {skill}: {count}")
+
+
+@app.command()
+def api(
+    host: Annotated[str, typer.Option(help="Host to bind")] = "127.0.0.1",
+    port: Annotated[int, typer.Option(help="Port to bind")] = 8000,
+) -> None:
+    """Start the FastAPI server for job analytics."""
+    try:
+        import uvicorn  # noqa: PLC0415
+    except ImportError as e:
+        console.print("[red]uvicorn not installed. Run: uv sync --extra ml[/red]")
+        raise typer.Exit(1) from e
+
+    from linkedin_scraper.api.main import create_app  # noqa: PLC0415
+
+    console.print(f"[bold green]Starting API server at http://{host}:{port}[/bold green]")
+    console.print("  Docs: http://{host}:{port}/docs")
+
+    app_instance = create_app()
+    uvicorn.run(app_instance, host=host, port=port)
+
+
+@app.command()
+def dashboard() -> None:
+    """Launch the Streamlit analytics dashboard."""
+    import subprocess  # noqa: PLC0415
+    import sys  # noqa: PLC0415
+
+    dashboard_path = Path(__file__).parent / "dashboard.py"
+
+    console.print("[bold green]Starting Streamlit dashboard...[/bold green]")
+    subprocess.run(  # noqa: S603
+        [sys.executable, "-m", "streamlit", "run", str(dashboard_path)],
+        check=False,
+    )
+
+
 if __name__ == "__main__":
     app()
