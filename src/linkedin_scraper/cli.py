@@ -2,6 +2,7 @@
 
 import asyncio
 import logging
+import os
 from pathlib import Path
 from typing import Annotated
 
@@ -17,6 +18,7 @@ from linkedin_scraper.models.job import JobIdSource
 from linkedin_scraper.scrapers.detail import JobDetailScraper
 from linkedin_scraper.scrapers.search import COUNTRY_GEO_IDS, JobSearchScraper
 from linkedin_scraper.storage.jobs import JobStorage
+from linkedin_scraper.tui import LinkedInScraperApp
 
 
 __all__ = ["app"]
@@ -30,6 +32,13 @@ app = typer.Typer(
 
 console = Console()
 
+ACK_ENV = "LINKEDIN_SCRAPER_ACKNOWLEDGE"
+ACK_MESSAGE = (
+    "This project is for offline educational use only. "
+    "Only access content you are authorized to access and comply with all "
+    "applicable terms, policies, and laws."
+)
+
 
 def version_callback(value: bool) -> None:
     """Print version and exit."""
@@ -38,8 +47,24 @@ def version_callback(value: bool) -> None:
         raise typer.Exit()
 
 
+def _is_acknowledged(ctx: typer.Context) -> bool:
+    env_value = os.getenv(ACK_ENV, "").strip().lower()
+    if env_value in {"1", "true", "yes", "y"}:
+        return True
+    return bool(ctx.obj and ctx.obj.get("acknowledged"))
+
+
+def _require_acknowledgement(ctx: typer.Context) -> None:
+    if _is_acknowledged(ctx):
+        return
+    console.print(Panel(ACK_MESSAGE, title="Educational Use Only", border_style="yellow"))
+    if not typer.confirm("Do you understand and want to proceed?"):
+        raise typer.Exit(1)
+
+
 @app.callback()
 def main(
+    ctx: typer.Context,
     _version: Annotated[
         bool | None,
         typer.Option(
@@ -54,8 +79,16 @@ def main(
         bool,
         typer.Option("--verbose", "-V", help="Enable verbose logging"),
     ] = False,
+    acknowledge: Annotated[
+        bool,
+        typer.Option(
+            "--i-understand",
+            help="Acknowledge educational-only use and compliance responsibility",
+        ),
+    ] = False,
 ) -> None:
     """LinkedIn Job Scraper - Educational project for scraping public job ads."""
+    ctx.obj = {"acknowledged": acknowledge}
     settings = get_settings()
     level = logging.DEBUG if verbose else logging.INFO
     setup_logging(level=level, log_dir=settings.log_dir)
@@ -63,6 +96,7 @@ def main(
 
 @app.command()
 def search(
+    ctx: typer.Context,
     keyword: Annotated[str, typer.Argument(help="Job search keyword")],
     country: Annotated[str, typer.Argument(help="Country name or code (e.g., 'Germany', 'DE')")],
     max_pages: Annotated[
@@ -83,6 +117,7 @@ def search(
     Example:
         linkedin-scraper search "python developer" germany --max-pages 20
     """
+    _require_acknowledgement(ctx)
     settings = get_settings()
     settings.headless = headless
 
@@ -115,6 +150,7 @@ def search(
 
 @app.command()
 def scrape(
+    ctx: typer.Context,
     limit: Annotated[
         int | None,
         typer.Option("--limit", "-l", help="Maximum jobs to scrape"),
@@ -146,9 +182,6 @@ def scrape(
         linkedin-scraper scrape --limit 10
         linkedin-scraper scrape --job-id 1234567890
     """
-    settings = get_settings()
-    settings.headless = headless
-
     # Parse source filter
     source_filter = None
     if source:
@@ -157,6 +190,10 @@ def scrape(
         except ValueError as err:
             console.print(f"[red]Invalid source: {source}. Use 'search' or 'recommended'[/red]")
             raise typer.Exit(1) from err
+
+    _require_acknowledgement(ctx)
+    settings = get_settings()
+    settings.headless = headless
 
     # Handle single job ID
     job_ids = [job_id] if job_id else None
@@ -317,6 +354,7 @@ def export(
 
 @app.command()
 def loop(
+    ctx: typer.Context,
     keyword: Annotated[str, typer.Argument(help="Job search keyword")],
     country: Annotated[str, typer.Argument(help="Country name or code")],
     cycles: Annotated[
@@ -344,6 +382,7 @@ def loop(
     Example:
         linkedin-scraper loop "data engineer" netherlands --cycles 5
     """
+    _require_acknowledgement(ctx)
     settings = get_settings()
     settings.headless = headless
 
@@ -429,9 +468,11 @@ async def _run_loop(
 
 
 @app.command()
-def tui() -> None:
+def tui(ctx: typer.Context) -> None:
     """Launch the interactive TUI (Terminal User Interface)."""
-    from linkedin_scraper.tui import LinkedInScraperApp  # noqa: PLC0415
+
+    if _is_acknowledged(ctx):
+        os.environ[ACK_ENV] = "1"
 
     app_instance = LinkedInScraperApp()
     app_instance.run()

@@ -1,3 +1,12 @@
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+**Table of Contents**  *generated with [DocToc](https://github.com/thlorenz/doctoc)*
+
+- [Contributing](#contributing)
+  - [Quick Start for Contributors](#quick-start-for-contributors)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 # Contributing
 
 Please see [CONTRIBUTING.md](https://github.com/yourusername/linkedin-job-scraper/blob/main/CONTRIBUTING.md) in the repository root for detailed contribution guidelines.

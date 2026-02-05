@@ -1,6 +1,7 @@
 """Terminal User Interface for LinkedIn Job Scraper using Textual."""
 
 import asyncio
+import os
 from datetime import datetime
 from typing import ClassVar
 
@@ -8,6 +9,7 @@ from textual import on, work
 from textual.app import App, ComposeResult
 from textual.binding import Binding
 from textual.containers import Container, Horizontal, Vertical
+from textual.screen import ModalScreen
 from textual.widgets import (
     Button,
     DataTable,
@@ -35,6 +37,11 @@ __all__ = ["LinkedInScraperApp"]
 
 logger = get_logger(__name__)
 
+ACK_ENV = "LINKEDIN_SCRAPER_ACKNOWLEDGE"
+ACK_MESSAGE = (
+    "Educational use only. Only access content you are authorized to access "
+    "and comply with all applicable terms, policies, and laws."
+)
 
 COUNTRIES = [
     (name.title(), code)
@@ -146,6 +153,29 @@ class LoopPanel(Container):
         yield ProgressBar(id="loop-progress", total=100, show_eta=False)
 
 
+class ConsentScreen(ModalScreen[bool]):
+    """Modal screen to confirm educational-only usage."""
+
+    def compose(self) -> ComposeResult:
+        yield Container(
+            Static("[bold]Educational Use Only[/bold]\n\n" + ACK_MESSAGE),
+            Horizontal(
+                Button("I Understand", id="btn-ack", variant="primary"),
+                Button("Exit", id="btn-exit", variant="error"),
+                classes="consent-buttons",
+            ),
+            id="consent-dialog",
+        )
+
+    @on(Button.Pressed, "#btn-ack")
+    def on_ack_pressed(self) -> None:
+        self.dismiss(True)
+
+    @on(Button.Pressed, "#btn-exit")
+    def on_exit_pressed(self) -> None:
+        self.dismiss(False)
+
+
 class LinkedInScraperApp(App[None]):
     """Main TUI application for LinkedIn Job Scraper."""
 
@@ -236,6 +266,21 @@ class LinkedInScraperApp(App[None]):
     DataTable {
         height: 100%;
     }
+
+    #consent-dialog {
+        width: 70%;
+        max-width: 80;
+        border: solid $warning;
+        padding: 2 3;
+        background: $surface;
+        align: center middle;
+    }
+
+    .consent-buttons {
+        height: 3;
+        align: center middle;
+        margin-top: 1;
+    }
     """
 
     BINDINGS: ClassVar[list[Binding]] = [  # type: ignore[assignment]
@@ -274,6 +319,14 @@ class LinkedInScraperApp(App[None]):
 
     async def on_mount(self) -> None:
         """Initialize the app on mount."""
+        if not self._is_acknowledged():
+            self.push_screen(ConsentScreen(), self._on_consent)
+            return
+
+        await self._initialize_app()
+
+    async def _initialize_app(self) -> None:
+        """Finish initialization once consent is acknowledged."""
         await self._refresh_stats()
 
         # Setup results table
@@ -282,6 +335,20 @@ class LinkedInScraperApp(App[None]):
 
         self.log_message("[bold green]LinkedIn Job Scraper started[/bold green]")
         self.log_message("Use the panels on the left to search and scrape jobs.")
+
+    def _on_consent(self, accepted: bool | None) -> None:
+        """Handle consent dialog result."""
+        if not accepted:
+            self.exit()
+            return
+
+        os.environ[ACK_ENV] = "1"
+        self._running_task = asyncio.create_task(self._initialize_app())
+
+    @staticmethod
+    def _is_acknowledged() -> bool:
+        env_value = os.getenv(ACK_ENV, "").strip().lower()
+        return env_value in {"1", "true", "yes", "y"}
 
     def log_message(self, message: str) -> None:
         """Add a message to the log panel."""

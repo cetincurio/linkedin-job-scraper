@@ -1,3 +1,31 @@
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+**Table of Contents**  *generated with [DocToc](https://github.com/thlorenz/doctoc)*
+
+- [Contributing to LinkedIn Job Scraper](#contributing-to-linkedin-job-scraper)
+  - [📋 Table of Contents](#-table-of-contents)
+  - [Code of Conduct](#code-of-conduct)
+  - [Getting Started](#getting-started)
+  - [Development Setup](#development-setup)
+    - [Prerequisites](#prerequisites)
+    - [Setup with uv (Recommended)](#setup-with-uv-recommended)
+    - [Setup with pip](#setup-with-pip)
+  - [Making Changes](#making-changes)
+    - [Branch Naming](#branch-naming)
+    - [Commit Messages](#commit-messages)
+  - [Code Style](#code-style)
+    - [Formatting & Linting](#formatting--linting)
+    - [Guidelines](#guidelines)
+    - [Example](#example)
+  - [Testing](#testing)
+    - [Running Tests](#running-tests)
+    - [Writing Tests](#writing-tests)
+  - [Pull Request Process](#pull-request-process)
+    - [PR Checklist](#pr-checklist)
+  - [Questions?](#questions)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 # Contributing to LinkedIn Job Scraper
 
 Thank you for your interest in contributing! This document provides guidelines

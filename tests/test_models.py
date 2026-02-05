@@ -48,6 +48,7 @@ class TestJobId:
 
         assert job1 == job2  # Same job_id
         assert job1 != job3  # Different job_id
+        assert job1 != "123"  # Different type
 
     def test_job_id_hash(self) -> None:
         """Test JobId hashing for set operations."""

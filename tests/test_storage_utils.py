@@ -80,6 +80,13 @@ class TestRedactPii:
         assert "5" in result
         assert "[PHONE]" not in result
 
+    def test_preserve_phone_like_with_few_digits(self) -> None:
+        """Test phone-like text with <10 digits is preserved."""
+        text = "Call +1 (23) 45-67-89 for info."
+        result = _redact_pii(text)
+        assert "[PHONE]" not in result
+        assert "+1 (23) 45-67-89" in result
+
     def test_preserve_all_digit_sequences(self) -> None:
         """Test that plain digit sequences are preserved."""
         text = "Job ID: 1234567890"

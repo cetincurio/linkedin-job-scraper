@@ -1,3 +1,21 @@
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+**Table of Contents**  *generated with [DocToc](https://github.com/thlorenz/doctoc)*
+
+- [Installation](#installation)
+  - [Requirements](#requirements)
+  - [Installation Methods](#installation-methods)
+    - [Using uv (Recommended)](#using-uv-recommended)
+    - [Using pip](#using-pip)
+    - [From PyPI (when published)](#from-pypi-when-published)
+  - [Verify Installation](#verify-installation)
+  - [Development Installation](#development-installation)
+  - [Troubleshooting](#troubleshooting)
+    - [Browser Installation Issues](#browser-installation-issues)
+    - [Permission Issues on Linux](#permission-issues-on-linux)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 # Installation
 
 ## Requirements

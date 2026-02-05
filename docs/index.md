@@ -1,3 +1,15 @@
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+**Table of Contents**  *generated with [DocToc](https://github.com/thlorenz/doctoc)*
+
+- [LinkedIn Job Scraper](#linkedin-job-scraper)
+  - [Features](#features)
+  - [Quick Start](#quick-start)
+  - [Documentation](#documentation)
+  - [Disclaimer](#disclaimer)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 # LinkedIn Job Scraper
 
 > **Educational project for learning web scraping with Playwright**

@@ -1,10 +1,13 @@
 """Tests for browser stealth configuration."""
 
+from linkedin_scraper.browser import stealth as stealth_module
 from linkedin_scraper.browser.stealth import (
     USER_AGENTS,
     VIEWPORTS,
     StealthConfig,
+    apply_stealth,
     get_random_user_agent,
+    inject_evasion_scripts,
 )
 
 
@@ -83,3 +86,65 @@ class TestUserAgentSelection:
         browsers = ["Chrome", "Firefox", "Safari", "Edg"]
         for ua in USER_AGENTS:
             assert any(b in ua for b in browsers), f"Invalid UA: {ua[:50]}..."
+
+
+class DummyStealth:
+    """Minimal stealth stub for testing."""
+
+    last_kwargs: dict[str, object] | None = None
+
+    def __init__(self, **kwargs: object) -> None:
+        DummyStealth.last_kwargs = kwargs
+
+    async def apply_stealth_async(self, context: object) -> None:
+        context.stealth_applied = True
+
+
+class DummyContext:
+    """Minimal browser context stub for testing."""
+
+
+class DummyPage:
+    """Minimal page stub to capture init scripts."""
+
+    def __init__(self) -> None:
+        self.scripts: list[str] = []
+
+    async def add_init_script(self, script: str) -> None:
+        self.scripts.append(script)
+
+
+class TestStealthApplication:
+    """Tests for applying stealth and evasion scripts."""
+
+    async def test_apply_stealth_uses_default_language_override(self, monkeypatch) -> None:
+        """Verify language override falls back when only one language provided."""
+        monkeypatch.setattr(stealth_module, "Stealth", DummyStealth)
+        context = DummyContext()
+        config = StealthConfig(languages=("en-US",))
+
+        await apply_stealth(context, config)
+
+        assert getattr(context, "stealth_applied", False) is True
+        assert DummyStealth.last_kwargs is not None
+        assert DummyStealth.last_kwargs["navigator_languages_override"] == ("en-US", "en")
+
+    async def test_apply_stealth_uses_first_two_languages(self, monkeypatch) -> None:
+        """Verify language override uses first two when available."""
+        monkeypatch.setattr(stealth_module, "Stealth", DummyStealth)
+        context = DummyContext()
+        config = StealthConfig(languages=("fr-FR", "fr", "en"))
+
+        await apply_stealth(context, config)
+
+        assert DummyStealth.last_kwargs is not None
+        assert DummyStealth.last_kwargs["navigator_languages_override"] == ("fr-FR", "fr")
+
+    async def test_inject_evasion_scripts_adds_script(self) -> None:
+        """Verify evasion script is injected into the page."""
+        page = DummyPage()
+
+        await inject_evasion_scripts(page)
+
+        assert len(page.scripts) == 1
+        assert "navigator.webdriver" in page.scripts[0]

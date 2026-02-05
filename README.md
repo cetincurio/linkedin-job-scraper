@@ -1,3 +1,38 @@
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+**Table of Contents**  *generated with [DocToc](https://github.com/thlorenz/doctoc)*
+
+- [LinkedIn Job Scraper](#linkedin-job-scraper)
+  - [Features](#features)
+    - [Three Core Features](#three-core-features)
+    - [Anti-Detection Techniques](#anti-detection-techniques)
+  - [Installation](#installation)
+    - [Prerequisites](#prerequisites)
+    - [Quick Start with uv (Recommended)](#quick-start-with-uv-recommended)
+    - [Alternative: pip](#alternative-pip)
+  - [Usage](#usage)
+    - [CLI Commands](#cli-commands)
+    - [TUI (Terminal User Interface)](#tui-terminal-user-interface)
+    - [Running as Module](#running-as-module)
+  - [Configuration](#configuration)
+    - [Environment Variables](#environment-variables)
+    - [Settings Reference](#settings-reference)
+  - [Project Structure](#project-structure)
+  - [Data Storage](#data-storage)
+    - [Job IDs (`data/job_ids/`)](#job-ids-datajob_ids)
+    - [Job Details (`data/job_details/`)](#job-details-datajob_details)
+  - [Ethical Guidelines](#ethical-guidelines)
+  - [Troubleshooting](#troubleshooting)
+    - [Common Issues](#common-issues)
+  - [Development](#development)
+    - [Make Commands](#make-commands)
+    - [Documentation](#documentation)
+  - [Contributing](#contributing)
+  - [License](#license)
+  - [Disclaimer](#disclaimer)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 # LinkedIn Job Scraper
 
 [![CI](https://github.com/yourusername/linkedin-job-scraper/actions/workflows/ci.yml/badge.svg)](https://github.com/yourusername/linkedin-job-scraper/actions/workflows/ci.yml)

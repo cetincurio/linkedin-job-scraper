@@ -1,7 +1,7 @@
 """Pydantic models for job data."""
 
 from datetime import datetime
-from enum import Enum
+from enum import StrEnum
 from typing import Any
 
 from pydantic import BaseModel, Field
@@ -16,7 +16,7 @@ __all__ = [
 ]
 
 
-class JobIdSource(str, Enum):
+class JobIdSource(StrEnum):
     """Source of the job ID."""
 
     SEARCH = "search"

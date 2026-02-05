@@ -3,6 +3,8 @@
 import hashlib
 import json
 
+import pytest
+
 from linkedin_scraper.config import Settings
 from linkedin_scraper.models.job import JobDetail, JobId, JobIdSource
 from linkedin_scraper.storage.jobs import JobStorage
@@ -47,6 +49,19 @@ class TestJobStorage:
         retrieved = await storage.get_job_ids(source=JobIdSource.SEARCH)
         assert len(retrieved) == 1
 
+    async def test_save_job_ids_empty_list_returns_zero(self, storage: JobStorage) -> None:
+        """Test saving an empty list of job IDs."""
+        saved_count = await storage.save_job_ids([])
+        assert saved_count == 0
+
+    async def test_save_job_ids_skips_existing_for_source(self, storage: JobStorage) -> None:
+        """Test save_job_ids does not re-save duplicates for a source."""
+        job = JobId(job_id="dup-source", source=JobIdSource.SEARCH)
+        await storage.save_job_id(job)
+
+        saved_count = await storage.save_job_ids([job])
+        assert saved_count == 0
+
     async def test_filter_unscraped_jobs(self, storage: JobStorage) -> None:
         """Test filtering for unscraped job IDs."""
         jobs = [
@@ -73,6 +88,21 @@ class TestJobStorage:
         unscraped = await storage.get_job_ids(source=JobIdSource.SEARCH, unscraped_only=True)
         assert len(unscraped) == 0
 
+    async def test_mark_job_scraped_missing_job_is_noop(self, storage: JobStorage) -> None:
+        """Test marking a missing job ID does nothing."""
+        await storage.mark_job_scraped("missing")
+        all_jobs = await storage.get_job_ids(source=JobIdSource.SEARCH)
+        assert all_jobs == []
+
+    async def test_mark_job_scraped_skips_already_scraped(self, storage: JobStorage) -> None:
+        """Test marking an already scraped job does not change it."""
+        job = JobId(job_id="already", source=JobIdSource.SEARCH, scraped=True)
+        await storage.save_job_id(job)
+
+        await storage.mark_job_scraped("already")
+        jobs = await storage.get_job_ids(source=JobIdSource.SEARCH)
+        assert jobs[0].scraped is True
+
     async def test_save_and_retrieve_job_detail(self, storage: JobStorage) -> None:
         """Test saving and retrieving job details."""
         detail = JobDetail(
@@ -94,6 +124,17 @@ class TestJobStorage:
     async def test_job_detail_not_found(self, storage: JobStorage) -> None:
         """Test retrieving non-existent job detail."""
         retrieved = await storage.get_job_detail("nonexistent")
+        assert retrieved is None
+
+    async def test_job_detail_invalid_json_returns_none(
+        self, storage: JobStorage, test_settings: Settings
+    ) -> None:
+        """Test retrieving a job detail with invalid JSON."""
+        bad_path = test_settings.job_details_dir / "bad.json"
+        bad_path.parent.mkdir(parents=True, exist_ok=True)
+        bad_path.write_text("{not json", encoding="utf-8")
+
+        retrieved = await storage.get_job_detail("bad")
         assert retrieved is None
 
     async def test_job_detail_exists(self, storage: JobStorage) -> None:
@@ -123,6 +164,29 @@ class TestJobStorage:
         assert stats["search_job_ids"] == 3
         assert stats["recommended_job_ids"] == 2
         assert stats["job_details"] == 1
+
+    async def test_get_job_ids_invalid_json_returns_empty(
+        self, storage: JobStorage, test_settings: Settings
+    ) -> None:
+        """Test invalid job ID JSON is handled gracefully."""
+        bad_path = test_settings.job_ids_dir / "search_job_ids.json"
+        bad_path.parent.mkdir(parents=True, exist_ok=True)
+        bad_path.write_text("{bad json", encoding="utf-8")
+
+        jobs = await storage.get_job_ids(source=JobIdSource.SEARCH)
+        assert jobs == []
+
+    async def test_get_job_ids_all_sources(self, storage: JobStorage) -> None:
+        """Test retrieving job IDs across all sources."""
+        await storage.save_job_ids(
+            [
+                JobId(job_id="s1", source=JobIdSource.SEARCH),
+                JobId(job_id="r1", source=JobIdSource.RECOMMENDED),
+            ]
+        )
+
+        jobs = await storage.get_job_ids()
+        assert {job.job_id for job in jobs} == {"s1", "r1"}
 
     async def test_export_job_details_jsonl_creates_dataset_and_manifest(
         self,
@@ -222,3 +286,15 @@ class TestJobStorage:
 
         assert manifest["record_count"] == 2
         assert len(output_path.read_text(encoding="utf-8").splitlines()) == 2
+
+    async def test_export_job_details_invalid_json_raises(
+        self, storage: JobStorage, test_settings: Settings
+    ) -> None:
+        """Test export raises when encountering invalid job detail JSON."""
+        bad_detail = test_settings.job_details_dir / "bad_detail.json"
+        bad_detail.parent.mkdir(parents=True, exist_ok=True)
+        bad_detail.write_text("{bad json", encoding="utf-8")
+
+        output_path = test_settings.data_dir / "datasets" / "job_details_bad.jsonl"
+        with pytest.raises(ValueError):
+            await storage.export_job_details_jsonl(output_path=output_path)

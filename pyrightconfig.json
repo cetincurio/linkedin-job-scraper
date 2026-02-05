@@ -1,5 +1,7 @@
 {
-  "include": ["src"],
+  "include": [
+    "src"
+  ],
   "exclude": [
     "**/__pycache__",
     "**/.venv",
@@ -19,7 +21,7 @@
     "**/.nox"
   ],
   "pythonVersion": "3.12",
-  "typeCheckingMode": "standard",
   "reportMissingImports": false,
-  "reportMissingTypeStubs": false
+  "reportMissingTypeStubs": false,
+  "typeCheckingMode": "standard"
 }

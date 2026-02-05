@@ -1,3 +1,21 @@
+<!-- START doctoc generated TOC please keep comment here to allow auto update -->
+<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+**Table of Contents**  *generated with [DocToc](https://github.com/thlorenz/doctoc)*
+
+- [Usage Guide](#usage-guide)
+  - [CLI Commands](#cli-commands)
+    - [Search for Jobs (Feature 1)](#search-for-jobs-feature-1)
+    - [Scrape Job Details (Feature 2 & 3)](#scrape-job-details-feature-2--3)
+    - [Loop Mode (All Features)](#loop-mode-all-features)
+    - [View Statistics](#view-statistics)
+    - [List Supported Countries](#list-supported-countries)
+  - [TUI (Terminal User Interface)](#tui-terminal-user-interface)
+    - [Keyboard Shortcuts](#keyboard-shortcuts)
+  - [Programmatic Usage](#programmatic-usage)
+  - [Data Storage](#data-storage)
+
+<!-- END doctoc generated TOC please keep comment here to allow auto update -->
+
 # Usage Guide
 
 ## CLI Commands
