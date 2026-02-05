@@ -1,3 +1,10 @@
+
+
+
+
+
+
+
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 **Table of Contents**  *generated with [DocToc](https://github.com/thlorenz/doctoc)*
@@ -24,7 +31,10 @@
   - [Ethical Guidelines](#ethical-guidelines)
   - [Troubleshooting](#troubleshooting)
     - [Common Issues](#common-issues)
+  - [CI/CD Summary](#cicd-summary)
+  - [Release Checklist](#release-checklist)
   - [Development](#development)
+    - [Build Backend](#build-backend)
     - [Make Commands](#make-commands)
     - [Documentation](#documentation)
   - [Contributing](#contributing)
@@ -35,8 +45,10 @@
 
 # LinkedIn Job Scraper
 
-[![CI](https://github.com/yourusername/linkedin-job-scraper/actions/workflows/ci.yml/badge.svg)](https://github.com/yourusername/linkedin-job-scraper/actions/workflows/ci.yml)
-[![Python 3.12+](https://img.shields.io/badge/python-3.12+-blue.svg)](https://www.python.org/downloads/)
+[![CI](https://github.com/cetincurio/linkedin-job-scraper/actions/workflows/ci.yml/badge.svg)](https://github.com/cetincurio/linkedin-job-scraper/actions/workflows/ci.yml)
+[![Release](https://github.com/cetincurio/linkedin-job-scraper/actions/workflows/release.yml/badge.svg)](https://github.com/cetincurio/linkedin-job-scraper/actions/workflows/release.yml)
+[![Docs](https://img.shields.io/website?url=https%3A%2F%2Fcetincurio.github.io%2Flinkedin-job-scraper%2F&label=docs)](https://cetincurio.github.io/linkedin-job-scraper/)
+[![Python 3.14+](https://img.shields.io/badge/python-3.14+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 [![uv](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/uv/main/assets/badge/v0.json)](https://github.com/astral-sh/uv)
@@ -77,7 +89,7 @@ A Python-based LinkedIn public job ads scraper with stealth capabilities, featur
 
 ### Prerequisites
 
-- Python 3.12+
+- Python 3.14+
 - [uv](https://docs.astral.sh/uv/) (recommended) or pip
 
 ### Quick Start with uv (Recommended)
@@ -87,7 +99,7 @@ A Python-based LinkedIn public job ads scraper with stealth capabilities, featur
 curl -LsSf https://astral.sh/uv/install.sh | sh
 
 # Clone and setup
-git clone https://github.com/yourusername/linkedin-job-scraper.git
+git clone https://github.com/cetincurio/linkedin-job-scraper.git
 cd linkedin-job-scraper
 
 # Install dependencies (creates .venv automatically)
@@ -103,7 +115,7 @@ uv run linkedin-scraper --help
 ### Alternative: pip
 
 ```bash
-git clone https://github.com/yourusername/linkedin-job-scraper.git
+git clone https://github.com/cetincurio/linkedin-job-scraper.git
 cd linkedin-job-scraper
 
 python -m venv .venv
@@ -175,15 +187,15 @@ LINKEDIN_SCRAPER_MAX_REQUESTS_PER_HOUR=100
 
 ### Settings Reference
 
-| Setting | Default | Description |
-|---------|---------|-------------|
-| `headless` | `false` | Run browser without GUI |
-| `slow_mo` | `50` | Slowdown between operations (ms) |
-| `min_delay_ms` | `800` | Minimum delay between actions |
-| `max_delay_ms` | `3000` | Maximum delay between actions |
-| `typing_delay_ms` | `80` | Delay between keystrokes |
-| `max_pages_per_session` | `10` | Max pages to scrape per run |
-| `max_requests_per_hour` | `100` | Rate limit per hour |
+| Setting                 | Default | Description                      |
+| ----------------------- | ------- | -------------------------------- |
+| `headless`              | `false` | Run browser without GUI          |
+| `slow_mo`               | `50`    | Slowdown between operations (ms) |
+| `min_delay_ms`          | `800`   | Minimum delay between actions    |
+| `max_delay_ms`          | `3000`  | Maximum delay between actions    |
+| `typing_delay_ms`       | `80`    | Delay between keystrokes         |
+| `max_pages_per_session` | `10`    | Max pages to scrape per run      |
+| `max_requests_per_hour` | `100`   | Rate limit per hour              |
 
 ## Project Structure
 
@@ -201,8 +213,24 @@ linkedin-job-scraper/
 └── src/linkedin_scraper/
     ├── __init__.py
     ├── __main__.py         # Module entry point
-    ├── cli.py              # CLI interface (Typer)
-    ├── tui.py              # TUI interface (Textual)
+    ├── consent.py          # Shared consent helpers
+    ├── cli/                # CLI interface (Typer)
+    │   ├── app.py
+    │   ├── search.py
+    │   ├── scrape.py
+    │   ├── loop.py
+    │   ├── export.py
+    │   ├── stats.py
+    │   ├── countries.py
+    │   └── tui.py
+    ├── tui/                # TUI interface (Textual)
+    │   ├── app.py
+    │   ├── actions.py
+    │   ├── handlers.py
+    │   ├── widgets.py
+    │   ├── screens.py
+    │   ├── styles.py
+    │   └── constants.py
     ├── config.py           # Settings management
     ├── logging_config.py   # Logging setup
     ├── browser/
@@ -211,11 +239,18 @@ linkedin-job-scraper/
     │   └── context.py      # Browser lifecycle management
     ├── scrapers/
     │   ├── base.py         # Base scraper class
-    │   ├── search.py       # Feature 1: Job search
-    │   ├── detail.py       # Feature 2: Job details
     │   └── recommended.py  # Feature 3: Recommendations
+    │   ├── search/
+    │   │   ├── scraper.py  # Feature 1: Job search
+    │   │   └── countries.py
+    │   └── detail/
+    │       ├── scraper.py  # Feature 2: Job details
+    │       └── extractors.py
     ├── storage/
-    │   └── jobs.py         # Data persistence
+    │   └── jobs/           # Data persistence
+    │       ├── storage.py
+    │       ├── exporter.py
+    │       └── text.py
     └── models/
         └── job.py          # Pydantic data models
 ```
@@ -285,7 +320,30 @@ playwright install chromium
 - Check if LinkedIn's page structure changed
 - Review debug screenshots in `data/screenshots/`
 
+## CI/CD Summary
+
+- Primary CI runs on PRs and pushes with fast lint/type checks, pre-commit, test matrix, build artifacts, wheel install tests, docs build, and optional integration tests.
+- Docs deploy automatically from `main` via GitHub Pages.
+- Release workflow builds sdist + wheel on tag pushes (`v*`) or manual runs.
+- TestPyPI/PyPI publishing is manual via workflow inputs.
+- Full details and diagrams live in `docs/dev/ci-cd.md`.
+
+## Release Checklist
+
+1. Choose the next version using PEP 440 (see `docs/dev/ci-cd.md`).
+2. Update `pyproject.toml` version and `CHANGELOG.md`.
+3. Tag the release: `git tag vX.Y.Z` and push the tag.
+4. Confirm the `Release` workflow builds artifacts.
+5. If you want to publish, run the `Release` workflow manually with `publish_target=testpypi`.
+6. Validate the TestPyPI release, then run again with `publish_target=pypi`.
+
 ## Development
+
+### Build Backend
+
+This project uses `uv_build` (the uv build backend) for fast, modern packaging. The
+`pyproject.toml` config includes `source-include` entries to keep `tests/` and
+`CHANGELOG.md` in the sdist.
 
 ```bash
 # Install dev dependencies
@@ -316,6 +374,7 @@ make format      # Format code
 make type-check  # Run pyright
 make docs        # Build documentation
 make build       # Build package
+make release     # Bump version + tag (VERSION=0.1.1)
 ```
 
 ### Documentation
@@ -328,6 +387,8 @@ uv run mkdocs build
 # Serve locally
 uv run mkdocs serve
 ```
+
+Docs are deployed automatically to GitHub Pages from `main`.
 
 ## Contributing
 

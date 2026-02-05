@@ -115,7 +115,7 @@ async def apply_stealth(context: BrowserContext, config: StealthConfig | None = 
         navigator_hardware_concurrency=True,
         navigator_languages_override=config.languages[:2]
         if len(config.languages) >= 2
-        else ("en-US", "en"),  # type: ignore[arg-type]
+        else ("en-US", "en"),
         webgl_vendor_override="Intel Inc.",
         webgl_renderer_override="Intel Iris OpenGL Engine",
     )

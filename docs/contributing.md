@@ -9,13 +9,13 @@
 
 # Contributing
 
-Please see [CONTRIBUTING.md](https://github.com/yourusername/linkedin-job-scraper/blob/main/CONTRIBUTING.md) in the repository root for detailed contribution guidelines.
+Please see [CONTRIBUTING.md](https://github.com/cetincurio/linkedin-job-scraper/blob/main/CONTRIBUTING.md) in the repository root for detailed contribution guidelines.
 
 ## Quick Start for Contributors
 
 ```bash
 # Clone and setup
-git clone https://github.com/yourusername/linkedin-job-scraper.git
+git clone https://github.com/cetincurio/linkedin-job-scraper.git
 cd linkedin-job-scraper
 
 # Install with dev dependencies

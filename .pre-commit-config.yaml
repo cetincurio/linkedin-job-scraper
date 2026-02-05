@@ -1,45 +1,23 @@
 repos:
-  - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v6.0.0
+  - repo: https://github.com/alessandrojcm/commitlint-pre-commit-hook
+    rev: v9.24.0
     hooks:
-      - id: check-added-large-files
-      - id: detect-private-key
-      - id: end-of-file-fixer
-      - id: trailing-whitespace
-      - id: check-merge-conflict
-      - id: check-yaml
-      - id: check-toml
-      - id: check-case-conflict
-      - id: check-ast
-      - id: check-docstring-first
-      - id: check-merge-conflict
-      - id: check-vcs-permalinks
-      - id: check-ast
-      - id: name-tests-test
-        args: [--pytest-test-first]
-      - id: mixed-line-ending
-      - id: fix-byte-order-marker
-      - id: check-builtin-literals
-      - id: check-json
-
-  - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.15.0
-    hooks:
-      - id: ruff-check
-        types_or: [python, pyi]
-        args: [--fix]
-      - id: ruff-format
-        types_or: [python, pyi]
+      - id: commitlint
+        stages: [commit-msg]
 
   - repo: https://github.com/asottile/pyupgrade
     rev: v3.21.2
     hooks:
       - id: pyupgrade
 
-  - repo: https://github.com/thlorenz/doctoc
-    rev: v2.2.0
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.15.0
     hooks:
-      - id: doctoc
+      - id: ruff-check
+        args: [--fix]
+        types_or: [python, pyi]
+      - id: ruff-format
+        types_or: [python, pyi]
 
   - repo: https://github.com/crate-ci/typos
     rev: v1.43.1
@@ -50,3 +28,32 @@ repos:
     rev: v8.30.0
     hooks:
       - id: gitleaks
+
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: check-added-large-files
+      - id: check-ast
+      - id: check-builtin-literals
+      - id: check-case-conflict
+      - id: check-docstring-first
+      - id: check-json
+      - id: check-merge-conflict
+      - id: check-toml
+      - id: check-vcs-permalinks
+      - id: check-yaml
+      - id: debug-statements
+      - id: detect-private-key
+      - id: end-of-file-fixer
+      - id: fix-byte-order-marker
+      - id: mixed-line-ending
+      - id: name-tests-test
+        args: [--pytest-test-first]
+      # - id: no-commit-to-branch
+      #   args: [--branch, main, --branch, staging]
+      - id: trailing-whitespace
+
+  - repo: https://github.com/thlorenz/doctoc
+    rev: v2.2.0
+    hooks:
+      - id: doctoc

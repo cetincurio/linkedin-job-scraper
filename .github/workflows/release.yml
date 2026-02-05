@@ -1,0 +1,161 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      publish_target:
+        description: "Publish target (manual)"
+        required: true
+        type: choice
+        options:
+          - none
+          - testpypi
+          - pypi
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  PYTHON_VERSION: "3.14"
+
+jobs:
+  build:
+    name: Build sdist + wheel
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+        with:
+          version: "latest"
+
+      - name: Locate uv cache
+        id: uv-cache
+        run: echo "dir=$(uv cache dir)" >> "$GITHUB_OUTPUT"
+
+      - name: Cache uv
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.uv-cache.outputs.dir }}
+          key: uv-${{ runner.os }}-${{ env.PYTHON_VERSION }}-${{ hashFiles('uv.lock') }}
+          restore-keys: |
+            uv-${{ runner.os }}-${{ env.PYTHON_VERSION }}-
+            uv-${{ runner.os }}-
+
+      - name: Set up Python
+        run: uv python install ${{ env.PYTHON_VERSION }}
+
+      - name: Build artifacts
+        run: uv build
+
+      - name: Upload dist artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/*
+
+  publish-testpypi:
+    name: Publish to TestPyPI (manual)
+    runs-on: ubuntu-latest
+    needs: [build]
+    if: github.event_name == 'workflow_dispatch' && inputs.publish_target == 'testpypi'
+    permissions:
+      contents: read
+      id-token: write
+    environment:
+      name: testpypi
+      url: https://test.pypi.org/project/linkedin-job-scraper/
+    steps:
+      - name: Download dist artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist
+
+      - name: Publish to TestPyPI (Trusted Publishing)
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          repository-url: https://test.pypi.org/legacy/
+          packages-dir: dist
+
+  publish-pypi:
+    name: Publish to PyPI (manual)
+    runs-on: ubuntu-latest
+    needs: [build]
+    if: github.event_name == 'workflow_dispatch' && inputs.publish_target == 'pypi'
+    permissions:
+      contents: read
+      id-token: write
+    environment:
+      name: pypi
+      url: https://pypi.org/project/linkedin-job-scraper/
+    steps:
+      - name: Download dist artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist
+
+      - name: Publish to PyPI (Trusted Publishing)
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: dist
+
+  # -------------------------------------------------------------------------
+  # Optional: Publish to PyPI / TestPyPI
+  # Uncomment when you are ready to publish.
+  # -------------------------------------------------------------------------
+  # publish:
+  #   name: Publish to PyPI
+  #   runs-on: ubuntu-latest
+  #   needs: [build]
+  #   permissions:
+  #     contents: read
+  #     id-token: write
+  #   environment:
+  #     name: pypi
+  #     url: https://pypi.org/project/linkedin-job-scraper/
+  #   steps:
+  #     - name: Download dist artifacts
+  #       uses: actions/download-artifact@v4
+  #       with:
+  #         name: dist
+  #         path: dist
+  #
+  #     - name: Publish to PyPI (Trusted Publishing)
+  #       uses: pypa/gh-action-pypi-publish@release/v1
+  #       with:
+  #         packages-dir: dist
+  #
+  # publish-testpypi:
+  #   name: Publish to TestPyPI
+  #   runs-on: ubuntu-latest
+  #   needs: [build]
+  #   permissions:
+  #     contents: read
+  #     id-token: write
+  #   environment:
+  #     name: testpypi
+  #     url: https://test.pypi.org/project/linkedin-job-scraper/
+  #   steps:
+  #     - name: Download dist artifacts
+  #       uses: actions/download-artifact@v4
+  #       with:
+  #         name: dist
+  #         path: dist
+  #
+  #     - name: Publish to TestPyPI (Trusted Publishing)
+  #       uses: pypa/gh-action-pypi-publish@release/v1
+  #       with:
+  #         repository-url: https://test.pypi.org/legacy/
+  #         packages-dir: dist

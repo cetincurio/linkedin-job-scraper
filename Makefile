@@ -1,7 +1,7 @@
 # Makefile for linkedin-job-scraper
 # Simple commands for common development tasks
 
-.PHONY: help install dev test lint format type-check docs clean build
+.PHONY: help install dev test lint format type-check docs clean build release
 
 # Default target
 help:
@@ -16,6 +16,7 @@ help:
 	@echo "  make docs        Build documentation"
 	@echo "  make clean       Clean build artifacts"
 	@echo "  make build       Build package"
+	@echo "  make release     Bump version + tag (VERSION=0.1.1)"
 	@echo ""
 
 # Install production dependencies
@@ -79,3 +80,10 @@ build: clean
 # Publish to PyPI (use with caution)
 publish: build
 	uv publish
+
+# Bump version + create tag (does not push)
+release:
+	@if [ -z "$(VERSION)" ]; then echo "VERSION is required (e.g., make release VERSION=0.2.0)"; exit 1; fi
+	@python - <<'PY'\nimport re\nfrom pathlib import Path\n\npath = Path(\"pyproject.toml\")\ntext = path.read_text()\nnew_version = \"$(VERSION)\"\npattern = r'^(version\\s*=\\s*\")([^\"]+)(\"\\s*)$'\nrepl = r\"\\\\1\" + new_version + r\"\\\\3\"\nnew_text, count = re.subn(pattern, repl, text, flags=re.MULTILINE)\nif count != 1:\n    raise SystemExit(\"Failed to update version in pyproject.toml\")\npath.write_text(new_text)\nprint(f\"Updated pyproject.toml version to {new_version}\")\nPY
+	@git tag v$(VERSION)
+	@echo "Created git tag v$(VERSION). Review CHANGELOG.md before pushing."

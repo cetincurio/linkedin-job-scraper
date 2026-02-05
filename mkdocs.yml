@@ -1,16 +1,19 @@
 # MkDocs configuration
 site_name: LinkedIn Job Scraper
 site_description: Educational LinkedIn public job ads scraper with stealth capabilities
-site_url: https://yourusername.github.io/linkedin-job-scraper
-repo_url: https://github.com/yourusername/linkedin-job-scraper
-repo_name: yourusername/linkedin-job-scraper
+site_url: https://cetincurio.github.io/linkedin-job-scraper
+repo_url: https://github.com/cetincurio/linkedin-job-scraper
+repo_name: cetincurio/linkedin-job-scraper
 edit_uri: edit/main/docs/
 
 theme:
   name: material
   font:
-    text: Inter              # Modern, highly readable sans-serif
-    code: JetBrains Mono     # Designed for code, with ligatures
+    text: Fira Sans              # Modern, highly readable sans-serif
+#    text: Inter              # Modern, highly readable sans-serif
+#    code: JetBrains Mono     # Designed for code, with ligatures
+    code: FiraCode Nerd     # Designed for code, with ligatures
+
   palette:
     - scheme: default
       primary: blue
@@ -66,3 +69,6 @@ nav:
       - Overview: api/index.md
   - Contributing: contributing.md
   - Changelog: changelog.md
+  - Development:
+      - Refactoring 2026: dev/refactoring-2026.md
+      - CI/CD 2026: dev/ci-cd.md

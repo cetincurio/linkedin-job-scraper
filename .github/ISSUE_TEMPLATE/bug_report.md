@@ -41,7 +41,7 @@ What actually happened.
 
 ## Environment
 - OS: [e.g., Ubuntu 24.04]
-- Python version: [e.g., 3.12.1]
+- Python version: [e.g., 3.14.1]
 - Package version: [e.g., 0.1.0]
 
 ## Logs

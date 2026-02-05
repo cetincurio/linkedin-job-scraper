@@ -1,5 +1,9 @@
 """Tests for browser stealth configuration."""
 
+from typing import Any, cast
+
+from playwright.async_api import BrowserContext, Page
+
 from linkedin_scraper.browser import stealth as stealth_module
 from linkedin_scraper.browser.stealth import (
     USER_AGENTS,
@@ -96,7 +100,7 @@ class DummyStealth:
     def __init__(self, **kwargs: object) -> None:
         DummyStealth.last_kwargs = kwargs
 
-    async def apply_stealth_async(self, context: object) -> None:
+    async def apply_stealth_async(self, context: Any) -> None:
         context.stealth_applied = True
 
 
@@ -123,7 +127,7 @@ class TestStealthApplication:
         context = DummyContext()
         config = StealthConfig(languages=("en-US",))
 
-        await apply_stealth(context, config)
+        await apply_stealth(cast(BrowserContext, context), config)
 
         assert getattr(context, "stealth_applied", False) is True
         assert DummyStealth.last_kwargs is not None
@@ -135,7 +139,7 @@ class TestStealthApplication:
         context = DummyContext()
         config = StealthConfig(languages=("fr-FR", "fr", "en"))
 
-        await apply_stealth(context, config)
+        await apply_stealth(cast(BrowserContext, context), config)
 
         assert DummyStealth.last_kwargs is not None
         assert DummyStealth.last_kwargs["navigator_languages_override"] == ("fr-FR", "fr")
@@ -144,7 +148,7 @@ class TestStealthApplication:
         """Verify evasion script is injected into the page."""
         page = DummyPage()
 
-        await inject_evasion_scripts(page)
+        await inject_evasion_scripts(cast(Page, page))
 
         assert len(page.scripts) == 1
         assert "navigator.webdriver" in page.scripts[0]

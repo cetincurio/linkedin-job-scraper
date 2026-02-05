@@ -5,6 +5,7 @@ Interactive behavior tests require manual testing or playwright integration.
 """
 
 import pytest
+from textual.binding import Binding, BindingType
 from textual.widgets import DataTable, Input, Select, Static
 
 from linkedin_scraper.tui import LinkedInScraperApp
@@ -65,6 +66,12 @@ class TestTUIStructure:
             assert btn is not None
 
 
+def _binding_key(binding: BindingType) -> str:
+    if isinstance(binding, Binding):
+        return binding.key
+    return binding[0]
+
+
 class TestKeyboardShortcuts:
     """Test keyboard bindings are registered and functional."""
 
@@ -72,7 +79,7 @@ class TestKeyboardShortcuts:
         """Verify all expected keyboard bindings are registered."""
         async with app.run_test():
             # Check that bindings exist in the app
-            binding_keys = {b.key for b in app.BINDINGS}
+            binding_keys = {_binding_key(b) for b in app.BINDINGS}
             assert "q" in binding_keys  # Quit
             assert "r" in binding_keys  # Refresh
             assert "c" in binding_keys  # Clear

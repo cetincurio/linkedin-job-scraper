@@ -1,5 +1,7 @@
 """Feature 3: Extract recommended/suggested job IDs from job detail pages."""
 
+from typing import Any
+
 from playwright.async_api import Page
 
 from linkedin_scraper.browser.human import HumanBehavior
@@ -25,11 +27,7 @@ class RecommendedJobsScraper(BaseScraper):
     - Any other recommendation sections
     """
 
-    async def run(  # type: ignore[override]
-        self,
-        parent_job_ids: list[str] | None = None,
-        limit: int | None = None,
-    ) -> list[str]:
+    async def run(self, **kwargs: Any) -> list[str]:
         """
         Standalone run to extract recommended jobs from stored job IDs.
 
@@ -43,6 +41,9 @@ class RecommendedJobsScraper(BaseScraper):
         Returns:
             List of newly discovered job IDs
         """
+        parent_job_ids = kwargs.get("parent_job_ids")
+        limit = kwargs.get("limit")
+
         if parent_job_ids is None:
             stored = await self._storage.get_job_ids(source=JobIdSource.SEARCH)
             parent_job_ids = [j.job_id for j in stored if j.scraped]

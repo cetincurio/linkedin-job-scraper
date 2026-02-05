@@ -20,7 +20,7 @@
 
 ## Requirements
 
-- Python 3.12 or higher
+- Python 3.14 or higher
 - A Chromium-based browser (installed automatically)
 
 ## Installation Methods
@@ -34,7 +34,7 @@
 curl -LsSf https://astral.sh/uv/install.sh | sh
 
 # Clone and install
-git clone https://github.com/yourusername/linkedin-job-scraper.git
+git clone https://github.com/cetincurio/linkedin-job-scraper.git
 cd linkedin-job-scraper
 
 # Install dependencies (creates .venv automatically)
@@ -48,7 +48,7 @@ uv run playwright install chromium
 
 ```bash
 # Clone repository
-git clone https://github.com/yourusername/linkedin-job-scraper.git
+git clone https://github.com/cetincurio/linkedin-job-scraper.git
 cd linkedin-job-scraper
 
 # Create virtual environment

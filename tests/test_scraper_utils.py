@@ -38,7 +38,7 @@ class TestJobIdExtraction:
         """Test that invalid URLs return None."""
         invalid_urls = [
             "https://www.linkedin.com/jobs/",
-            "https://www.linkedin.com/in/username/",
+            "https://www.linkedin.com/in/cetincurio/",
             "https://www.google.com/",
             "",
             "not-a-url",

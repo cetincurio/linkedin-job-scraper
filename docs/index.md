@@ -1,3 +1,10 @@
+
+
+
+
+
+
+
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 **Table of Contents**  *generated with [DocToc](https://github.com/thlorenz/doctoc)*
@@ -5,6 +12,8 @@
 - [LinkedIn Job Scraper](#linkedin-job-scraper)
   - [Features](#features)
   - [Quick Start](#quick-start)
+  - [Module Layout](#module-layout)
+  - [DocToc Updates](#doctoc-updates)
   - [Documentation](#documentation)
   - [Disclaimer](#disclaimer)
 
@@ -40,6 +49,33 @@ linkedin-scraper scrape --limit 10
 
 # Launch interactive TUI
 linkedin-scraper tui
+```
+
+## Module Layout
+
+This project is intentionally modular. The key packages are:
+
+- `cli/`: Typer CLI commands
+- `tui/`: Textual TUI app (actions, handlers, widgets)
+- `scrapers/`: Search, detail, and recommendation scrapers
+- `storage/`: Job ID and detail persistence/export helpers
+
+## DocToc Updates
+
+We keep Markdown TOCs up to date with a small, dependency-free script.
+
+Use it when you add or rename headings in any of these files:
+- `README.md`
+- `docs/index.md`
+- `docs/usage.md`
+- `docs/dev/refactoring-2026.md`
+- `CHANGELOG.md`
+- `CONTRIBUTING.md`
+
+Run:
+
+```bash
+python3 scripts/update_toc.py
 ```
 
 ## Documentation

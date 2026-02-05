@@ -2,25 +2,47 @@
 name: CI
 
 on:
+  workflow_dispatch:
   push:
     branches: [main, develop]
+    paths:
+      - .github/workflows/ci.yml
+      - pyproject.toml
+      - uv.lock
+      - src/**
+      - tests/**
+      - scripts/**
   pull_request:
     branches: [main]
+    paths:
+      - .github/workflows/ci.yml
+      - pyproject.toml
+      - uv.lock
+      - src/**
+      - tests/**
+      - scripts/**
+  merge_group:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 env:
-  PYTHON_VERSION: "3.12"
+  PYTHON_VERSION: "3.14"
 
 jobs:
   # ==========================================================================
-  # Lint and type check
+  # Lint, format, type check, pre-commit
   # ==========================================================================
   lint:
-    name: Lint & Type Check
+    name: Lint, Format, Type Check
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
 
@@ -28,6 +50,19 @@ jobs:
         uses: astral-sh/setup-uv@v4
         with:
           version: "latest"
+
+      - name: Locate uv cache
+        id: uv-cache
+        run: echo "dir=$(uv cache dir)" >> "$GITHUB_OUTPUT"
+
+      - name: Cache uv
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.uv-cache.outputs.dir }}
+          key: uv-${{ runner.os }}-${{ env.PYTHON_VERSION }}-${{ hashFiles('uv.lock') }}
+          restore-keys: |
+            uv-${{ runner.os }}-${{ env.PYTHON_VERSION }}-
+            uv-${{ runner.os }}-
 
       - name: Set up Python
         run: uv python install ${{ env.PYTHON_VERSION }}
@@ -44,16 +79,20 @@ jobs:
       - name: Run Pyright type checker
         run: uv run pyright src/
 
+      - name: Run pre-commit (all files)
+        run: uv run pre-commit run --all-files
+
   # ==========================================================================
-  # Run tests
+  # Run tests (matrix)
   # ==========================================================================
   test:
-    name: Test Python ${{ matrix.python-version }}
+    name: Tests (Python ${{ matrix.python-version }})
     runs-on: ubuntu-latest
+    timeout-minutes: 20
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.12", "3.13"]
+        python-version: ["3.13", "3.14"]
 
     steps:
       - uses: actions/checkout@v4
@@ -62,6 +101,19 @@ jobs:
         uses: astral-sh/setup-uv@v4
         with:
           version: "latest"
+
+      - name: Locate uv cache
+        id: uv-cache
+        run: echo "dir=$(uv cache dir)" >> "$GITHUB_OUTPUT"
+
+      - name: Cache uv
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.uv-cache.outputs.dir }}
+          key: uv-${{ runner.os }}-${{ matrix.python-version }}-${{ hashFiles('uv.lock') }}
+          restore-keys: |
+            uv-${{ runner.os }}-${{ matrix.python-version }}-
+            uv-${{ runner.os }}-
 
       - name: Set up Python ${{ matrix.python-version }}
         run: uv python install ${{ matrix.python-version }}
@@ -86,13 +138,159 @@ jobs:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
   # ==========================================================================
+  # Build artifacts once tests and lint pass
+  # ==========================================================================
+  build:
+    name: Build (sdist + wheel)
+    runs-on: ubuntu-latest
+    needs: [lint, test]
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+        with:
+          version: "latest"
+
+      - name: Locate uv cache
+        id: uv-cache
+        run: echo "dir=$(uv cache dir)" >> "$GITHUB_OUTPUT"
+
+      - name: Cache uv
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.uv-cache.outputs.dir }}
+          key: uv-${{ runner.os }}-${{ env.PYTHON_VERSION }}-${{ hashFiles('uv.lock') }}
+          restore-keys: |
+            uv-${{ runner.os }}-${{ env.PYTHON_VERSION }}-
+            uv-${{ runner.os }}-
+
+      - name: Set up Python
+        run: uv python install ${{ env.PYTHON_VERSION }}
+
+      - name: Build artifacts
+        run: uv build
+
+      - name: Upload dist artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/*
+
+  # ==========================================================================
+  # Test installed wheel
+  # ==========================================================================
+  test-wheel:
+    name: Test wheel install
+    runs-on: ubuntu-latest
+    needs: [build]
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+        with:
+          version: "latest"
+
+      - name: Set up Python
+        run: uv python install ${{ env.PYTHON_VERSION }}
+
+      - name: Download dist artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist
+
+      - name: Install wheel
+        run: uv pip install dist/*.whl
+
+      - name: Import package
+        run: uv run python -c "import linkedin_scraper"
+
+      - name: Run minimal tests against installed package
+        run: |
+          uv run pytest tests/test_config.py -m "not integration"
+
+  # ==========================================================================
+  # Build docs
+  # ==========================================================================
+  docs:
+    name: Build docs
+    runs-on: ubuntu-latest
+    needs: [lint, test]
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+        with:
+          version: "latest"
+
+      - name: Locate uv cache
+        id: uv-cache
+        run: echo "dir=$(uv cache dir)" >> "$GITHUB_OUTPUT"
+
+      - name: Cache uv
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.uv-cache.outputs.dir }}
+          key: uv-${{ runner.os }}-${{ env.PYTHON_VERSION }}-${{ hashFiles('uv.lock') }}
+          restore-keys: |
+            uv-${{ runner.os }}-${{ env.PYTHON_VERSION }}-
+            uv-${{ runner.os }}-
+
+      - name: Set up Python
+        run: uv python install ${{ env.PYTHON_VERSION }}
+
+      - name: Install docs dependencies
+        run: uv sync --extra docs
+
+      - name: Build docs
+        run: uv run mkdocs build
+
+      - name: Upload docs site
+        uses: actions/upload-artifact@v4
+        with:
+          name: site
+          path: site
+
+  # ==========================================================================
+  # Deploy docs (main only)
+  # ==========================================================================
+  deploy-docs:
+    name: Deploy docs
+    runs-on: ubuntu-latest
+    needs: [docs]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    timeout-minutes: 15
+    steps:
+      - name: Download site artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: site
+          path: site
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+  # ==========================================================================
   # Integration tests (optional, requires browser)
   # ==========================================================================
   integration:
     name: Integration Tests
     runs-on: ubuntu-latest
-    needs: [test]
+    needs: [test, build]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    timeout-minutes: 30
 
     steps:
       - uses: actions/checkout@v4
@@ -101,6 +299,19 @@ jobs:
         uses: astral-sh/setup-uv@v4
         with:
           version: "latest"
+
+      - name: Locate uv cache
+        id: uv-cache
+        run: echo "dir=$(uv cache dir)" >> "$GITHUB_OUTPUT"
+
+      - name: Cache uv
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.uv-cache.outputs.dir }}
+          key: uv-${{ runner.os }}-${{ env.PYTHON_VERSION }}-${{ hashFiles('uv.lock') }}
+          restore-keys: |
+            uv-${{ runner.os }}-${{ env.PYTHON_VERSION }}-
+            uv-${{ runner.os }}-
 
       - name: Set up Python
         run: uv python install ${{ env.PYTHON_VERSION }}

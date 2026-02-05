@@ -1,3 +1,10 @@
+
+
+
+
+
+
+
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 **Table of Contents**  *generated with [DocToc](https://github.com/thlorenz/doctoc)*
@@ -28,6 +35,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Feature 3: Recommended jobs ID extractor from job detail pages
 - CLI interface with Typer
 - TUI interface with Textual
+- Modular package layout with focused submodules (CLI, TUI, scrapers, storage)
 - Anti-detection techniques using playwright-stealth
 - Human-like behavior simulation (mouse movements, typing delays)
 - Pydantic models for type-safe data handling
@@ -36,6 +44,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Pre-commit hooks for code quality
 - GitHub Actions CI/CD workflows
 - Full test suite with pytest
+- Switched build backend to `uv_build` with sdist source includes for tests and changelog
 
 ### Security
 
@@ -52,5 +61,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - CLI and TUI interfaces
 - Documentation
 
-[Unreleased]: https://github.com/yourusername/linkedin-job-scraper/compare/v0.1.0...HEAD
-[0.1.0]: https://github.com/yourusername/linkedin-job-scraper/releases/tag/v0.1.0
+[Unreleased]: https://github.com/cetincurio/linkedin-job-scraper/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/cetincurio/linkedin-job-scraper/releases/tag/v0.1.0

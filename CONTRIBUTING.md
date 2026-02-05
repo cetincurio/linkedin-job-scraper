@@ -1,3 +1,10 @@
+
+
+
+
+
+
+
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 **Table of Contents**  *generated with [DocToc](https://github.com/thlorenz/doctoc)*
@@ -52,7 +59,7 @@ Be respectful, inclusive, and constructive. We're all here to learn and build.
 3. **Create a branch** for your changes
 
 ```bash
-git clone https://github.com/yourusername/linkedin-job-scraper.git
+git clone https://github.com/cetincurio/linkedin-job-scraper.git
 cd linkedin-job-scraper
 git checkout -b feature/your-feature-name
 ```
@@ -61,7 +68,7 @@ git checkout -b feature/your-feature-name
 
 ### Prerequisites
 
-- Python 3.12+
+- Python 3.14+
 - [uv](https://docs.astral.sh/uv/) (recommended) or pip
 
 ### Setup with uv (Recommended)
@@ -152,7 +159,9 @@ uv run pyright src/
 2. **Docstrings** - Public functions/classes need docstrings
 3. **No print statements** - Use `logging` module instead
 4. **Keep functions small** - Single responsibility principle
-5. **Use pathlib** - Prefer `Path` over string paths
+5. **Keep files small** - Each Python file should stay under 300 lines
+6. **Prefer modules** - Split features into subpackages when they grow
+7. **Use pathlib** - Prefer `Path` over string paths
 
 ### Example
 
@@ -189,6 +198,9 @@ def process_file(file_path: Path) -> dict[str, str]:
 ### Running Tests
 
 ```bash
+# Refresh DocToc sections (no Node required)
+python3 scripts/update_toc.py
+
 # Run all tests
 uv run pytest
 

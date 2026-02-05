@@ -20,7 +20,7 @@
     "**/.tox",
     "**/.nox"
   ],
-  "pythonVersion": "3.12",
+  "pythonVersion": "3.14",
   "reportMissingImports": false,
   "reportMissingTypeStubs": false,
   "typeCheckingMode": "standard"

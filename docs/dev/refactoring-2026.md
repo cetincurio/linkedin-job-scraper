@@ -1,3 +1,10 @@
+
+
+
+
+
+
+
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
 **Table of Contents**  *generated with [DocToc](https://github.com/thlorenz/doctoc)*
@@ -357,14 +364,14 @@ cat ~/.ssh/id_ed25519_github_account2.pub
 ### Step 4: Set Local Git Config (per-repo)
 
 ```bash
-git config user.name "your-username"
+git config user.name "cetincurio"
 git config user.email "your-email@example.com"
 ```
 
 ### Step 5: Add Remote with Alias
 
 ```bash
-git remote add origin git@github-account2:username/repo.git
+git remote add origin git@github-account2:cetincurio/linkedin-job-scraper.git
 ```
 
 ### Step 6: Verify & Push
@@ -406,7 +413,7 @@ uv run --with deptry deptry src/
 | `.gitignore` | Reorganized with clear sections |
 | `.pre-commit-config.yaml` | Simplified to ruff-only |
 | `mkdocs.yml` | Added custom fonts |
-| `src/linkedin_scraper/cli.py` | Added `noqa: PLC0415` for lazy import |
+| `src/linkedin_scraper/cli/app.py` | CLI entry point, modularized commands |
 
 ---
 
