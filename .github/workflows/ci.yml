@@ -203,6 +203,9 @@ jobs:
           name: dist
           path: dist
 
+      - name: Create virtual environment
+        run: uv venv
+
       - name: Install wheel
         run: uv pip install dist/*.whl
 
@@ -264,7 +267,9 @@ jobs:
     name: Deploy docs
     runs-on: ubuntu-latest
     needs: [docs]
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    # GitHub Pages deployments will 404 if Pages isn't enabled for the repo.
+    # Opt-in via a repository variable to keep CI green by default (esp. for forks).
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && vars.ENABLE_PAGES == 'true'
     timeout-minutes: 15
     steps:
       - name: Download site artifact
@@ -326,6 +331,7 @@ jobs:
         run: |
           uv run pytest tests/ \
             -m "integration" \
+            --no-cov \
             --timeout=120
         env:
           LINKEDIN_SCRAPER_HEADLESS: "true"

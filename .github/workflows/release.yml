@@ -64,52 +64,58 @@ jobs:
           name: dist
           path: dist/*
 
-  publish-testpypi:
-    name: Publish to TestPyPI (manual)
-    runs-on: ubuntu-latest
-    needs: [build]
-    if: github.event_name == 'workflow_dispatch' && inputs.publish_target == 'testpypi'
-    permissions:
-      contents: read
-      id-token: write
-    environment:
-      name: testpypi
-      url: https://test.pypi.org/project/linkedin-job-scraper/
-    steps:
-      - name: Download dist artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: dist
-          path: dist
 
-      - name: Publish to TestPyPI (Trusted Publishing)
-        uses: pypa/gh-action-pypi-publish@release/v1
-        with:
-          repository-url: https://test.pypi.org/legacy/
-          packages-dir: dist
+  # -------------------------------------------------------------------------
+  # Optional: Publish to PyPI / TestPyPI
+  # Uncomment when you are ready to publish.
+  # -------------------------------------------------------------------------
 
-  publish-pypi:
-    name: Publish to PyPI (manual)
-    runs-on: ubuntu-latest
-    needs: [build]
-    if: github.event_name == 'workflow_dispatch' && inputs.publish_target == 'pypi'
-    permissions:
-      contents: read
-      id-token: write
-    environment:
-      name: pypi
-      url: https://pypi.org/project/linkedin-job-scraper/
-    steps:
-      - name: Download dist artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: dist
-          path: dist
+  # publish-testpypi:
+  #   name: Publish to TestPyPI (manual)
+  #   runs-on: ubuntu-latest
+  #   needs: [build]
+  #   if: github.event_name == 'workflow_dispatch' && inputs.publish_target == 'testpypi'
+  #   permissions:
+  #     contents: read
+  #     id-token: write
+  #   environment:
+  #     name: testpypi
+  #     url: https://test.pypi.org/project/linkedin-job-scraper/
+  #   steps:
+  #     - name: Download dist artifacts
+  #       uses: actions/download-artifact@v4
+  #       with:
+  #         name: dist
+  #         path: dist
 
-      - name: Publish to PyPI (Trusted Publishing)
-        uses: pypa/gh-action-pypi-publish@release/v1
-        with:
-          packages-dir: dist
+  #     - name: Publish to TestPyPI (Trusted Publishing)
+  #       uses: pypa/gh-action-pypi-publish@release/v1
+  #       with:
+  #         repository-url: https://test.pypi.org/legacy/
+  #         packages-dir: dist
+
+  # publish-pypi:
+  #   name: Publish to PyPI (manual)
+  #   runs-on: ubuntu-latest
+  #   needs: [build]
+  #   if: github.event_name == 'workflow_dispatch' && inputs.publish_target == 'pypi'
+  #   permissions:
+  #     contents: read
+  #     id-token: write
+  #   environment:
+  #     name: pypi
+  #     url: https://pypi.org/project/linkedin-job-scraper/
+  #   steps:
+  #     - name: Download dist artifacts
+  #       uses: actions/download-artifact@v4
+  #       with:
+  #         name: dist
+  #         path: dist
+
+  #     - name: Publish to PyPI (Trusted Publishing)
+  #       uses: pypa/gh-action-pypi-publish@release/v1
+  #       with:
+  #         packages-dir: dist
 
   # -------------------------------------------------------------------------
   # Optional: Publish to PyPI / TestPyPI
