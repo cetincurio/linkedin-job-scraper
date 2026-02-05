@@ -214,7 +214,9 @@ jobs:
 
       - name: Run minimal tests against installed package
         run: |
-          uv run pytest tests/test_config.py -m "not integration"
+          # The project-wide pytest addopts include coverage flags, but in this job we
+          # intentionally only install the wheel (not pytest-cov). Clear addopts.
+          uv run pytest -o addopts= tests/test_config.py -m "not integration"
 
   # ==========================================================================
   # Build docs
@@ -329,9 +331,17 @@ jobs:
 
       - name: Run integration tests
         run: |
+          set +e
           uv run pytest tests/ \
             -m "integration" \
             --no-cov \
             --timeout=120
+          status=$?
+          # pytest exits with code 5 when no tests were collected/selected.
+          # For this repo, integration tests are optional; treat "no tests" as success.
+          if [ "$status" -eq 5 ]; then
+            exit 0
+          fi
+          exit "$status"
         env:
           LINKEDIN_SCRAPER_HEADLESS: "true"
