@@ -11,7 +11,8 @@ from linkedin_scraper.scrapers.base import BaseScraper
 
 
 def _unique_list(items: list[str]) -> list[str]:
-    return list(set(items))
+    # Preserve first-seen order for stable output.
+    return list(dict.fromkeys(items))
 
 
 async def wait_for_job_content(scraper: BaseScraper, page: Page) -> bool:

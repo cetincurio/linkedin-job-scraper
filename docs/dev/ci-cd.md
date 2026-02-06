@@ -1,25 +1,25 @@
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
-<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+
 **Table of Contents**  *generated with [DocToc](https://github.com/thlorenz/doctoc)*
 
 - [CI/CD (2026) Overview](#cicd-2026-overview)
   - [Pipeline At A Glance](#pipeline-at-a-glance)
-  - [Release Pipeline (Build + Optional Publish)](#release-pipeline-build--optional-publish)
+  - [Release Pipeline (Build + Optional Publish)](#release-pipeline-build-optional-publish)
   - [Release Checklist (Small And Practical)](#release-checklist-small-and-practical)
   - [Triggers](#triggers)
   - [Jobs](#jobs)
     - [Lint, Format, Type Check, Pre-commit](#lint-format-type-check-pre-commit)
     - [Test (Matrix)](#test-matrix)
-    - [Build (sdist + wheel)](#build-sdist--wheel)
+    - [Build (sdist + wheel)](#build-sdist-wheel)
     - [Test Installed Wheel](#test-installed-wheel)
     - [Docs](#docs)
     - [Integration](#integration)
   - [Caching Strategy](#caching-strategy)
-  - [Performance & Minimalism Principles](#performance--minimalism-principles)
+  - [Performance & Minimalism Principles](#performance-minimalism-principles)
   - [Future Proofing](#future-proofing)
   - [Versioning System (2026 Best Practice)](#versioning-system-2026-best-practice)
   - [Build System In `pyproject.toml` (2026 Best Practice)](#build-system-in-pyprojecttoml-2026-best-practice)
-  - [Enabling PyPI / TestPyPI Publishing](#enabling-pypi--testpypi-publishing)
+  - [Enabling PyPI / TestPyPI Publishing](#enabling-pypi-testpypi-publishing)
   - [Files](#files)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->

@@ -66,7 +66,9 @@ class JobDetailScraper(BaseScraper):
             stored_jobs = await self._storage.get_job_ids(source=source, unscraped_only=True)
             job_ids = [j.job_id for j in stored_jobs]
 
-        if limit:
+        if limit is not None:
+            if not isinstance(limit, int) or limit < 1:
+                raise ValueError("limit must be an integer >= 1")
             job_ids = job_ids[:limit]
 
         if not job_ids:
@@ -98,8 +100,8 @@ class JobDetailScraper(BaseScraper):
                             if recommended_ids:
                                 logger.info(f"Found {len(recommended_ids)} recommended jobs")
 
-                except Exception as e:
-                    logger.error(f"Error scraping job {job_id}: {e}")
+                except Exception:
+                    logger.exception("Error scraping job %s", job_id)
                     await self._take_debug_screenshot(page, f"error_{job_id}")
 
                 await human.random_delay(2000, 4000)

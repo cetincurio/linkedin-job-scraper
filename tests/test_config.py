@@ -10,7 +10,8 @@ class TestSettings:
 
     def test_default_settings(self) -> None:
         """Test default settings values."""
-        settings = Settings()
+        # Avoid inheriting developer-local .env values when running tests.
+        settings = Settings(_env_file=None)
 
         assert settings.headless is False
         assert settings.slow_mo == 50

@@ -48,6 +48,16 @@ def loop(
     Example:
         linkedin-scraper loop "data engineer" netherlands --cycles 5
     """
+    if cycles < 1:
+        console.print("[red]--cycles must be >= 1[/red]")
+        raise typer.Exit(1)
+    if search_pages < 1:
+        console.print("[red]--search-pages must be >= 1[/red]")
+        raise typer.Exit(1)
+    if scrape_limit < 1:
+        console.print("[red]--scrape-limit must be >= 1[/red]")
+        raise typer.Exit(1)
+
     require_acknowledgement(ctx)
     settings = get_settings()
     settings.headless = headless

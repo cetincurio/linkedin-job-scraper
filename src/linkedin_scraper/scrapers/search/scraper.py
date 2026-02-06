@@ -71,7 +71,10 @@ class JobSearchScraper(BaseScraper):
         if not isinstance(keyword, str) or not isinstance(country, str):
             raise ValueError("keyword and country are required string arguments")
 
-        max_pages = max_pages or self._settings.max_pages_per_session
+        if max_pages is None:
+            max_pages = self._settings.max_pages_per_session
+        if not isinstance(max_pages, int) or max_pages < 1:
+            raise ValueError("max_pages must be an integer >= 1")
 
         self._current_result = JobSearchResult(
             keyword=keyword,
@@ -153,7 +156,7 @@ class JobSearchScraper(BaseScraper):
         except Exception as e:
             logger.debug(f"Error extracting job IDs from links: {e}")
 
-        unique_ids = list(set(job_ids))
+        unique_ids = list(dict.fromkeys(job_ids))
         assert self._current_result is not None, "No current result initialized"
         new_ids = [jid for jid in unique_ids if jid not in self._current_result.job_ids]
 

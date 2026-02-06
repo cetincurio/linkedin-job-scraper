@@ -1,5 +1,5 @@
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
-<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+
 **Table of Contents**  *generated with [DocToc](https://github.com/thlorenz/doctoc)*
 
 - [Configuration](#configuration)
@@ -21,6 +21,7 @@ Create a `.env` file in the project root:
 LINKEDIN_SCRAPER_HEADLESS=false
 LINKEDIN_SCRAPER_SLOW_MO=50
 LINKEDIN_SCRAPER_BROWSER_TYPE=chromium
+LINKEDIN_SCRAPER_DISABLE_BROWSER_SANDBOX=false
 
 # Anti-detection delays (milliseconds)
 LINKEDIN_SCRAPER_MIN_DELAY_MS=800
@@ -29,6 +30,11 @@ LINKEDIN_SCRAPER_TYPING_DELAY_MS=80
 
 # Scraping limits
 LINKEDIN_SCRAPER_MAX_PAGES_PER_SESSION=10
+LINKEDIN_SCRAPER_PAGE_LOAD_TIMEOUT_MS=30000
+LINKEDIN_SCRAPER_REQUEST_TIMEOUT_MS=15000
+
+# Rate limiting
+LINKEDIN_SCRAPER_MIN_REQUEST_INTERVAL_SEC=2.0
 LINKEDIN_SCRAPER_MAX_REQUESTS_PER_HOUR=100
 
 # Storage paths
@@ -43,14 +49,15 @@ LINKEDIN_SCRAPER_LOG_DIR=logs
 | `headless` | bool | `false` | Run browser without GUI |
 | `slow_mo` | int | `50` | Slowdown between operations (ms) |
 | `browser_type` | str | `chromium` | Browser engine |
+| `disable_browser_sandbox` | bool | `false` | Disable Chromium sandbox (unsafe; containers only) |
 | `min_delay_ms` | int | `800` | Minimum action delay |
 | `max_delay_ms` | int | `3000` | Maximum action delay |
 | `typing_delay_ms` | int | `80` | Delay between keystrokes |
 | `mouse_movement_steps` | int | `25` | Mouse movement smoothness |
 | `max_pages_per_session` | int | `10` | Max pages per run |
 | `page_load_timeout_ms` | int | `30000` | Page load timeout |
-| `min_request_interval_sec` | float | `2.0` | Min seconds between requests |
-| `max_requests_per_hour` | int | `100` | Rate limit per hour |
+| `min_request_interval_sec` | float | `2.0` | Min seconds between requests (0 disables gap limiter) |
+| `max_requests_per_hour` | int | `100` | Rate limit per hour (0 disables hourly limiter) |
 
 ## Programmatic Configuration
 

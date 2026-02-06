@@ -17,7 +17,6 @@ on:
 
 permissions:
   contents: read
-  id-token: write
 
 concurrency:
   group: release-${{ github.ref }}
@@ -32,10 +31,10 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
 
       - name: Install uv
-        uses: astral-sh/setup-uv@v4
+        uses: astral-sh/setup-uv@7eb50e6e20e1e2009087999ba91242e80253875f # v7
         with:
           version: "latest"
 
@@ -44,7 +43,7 @@ jobs:
         run: echo "dir=$(uv cache dir)" >> "$GITHUB_OUTPUT"
 
       - name: Cache uv
-        uses: actions/cache@v4
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
         with:
           path: ${{ steps.uv-cache.outputs.dir }}
           key: uv-${{ runner.os }}-${{ env.PYTHON_VERSION }}-${{ hashFiles('uv.lock') }}
@@ -59,7 +58,7 @@ jobs:
         run: uv build
 
       - name: Upload dist artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
           name: dist
           path: dist/*

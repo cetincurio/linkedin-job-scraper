@@ -2,7 +2,7 @@
 
 import functools
 from pathlib import Path
-from typing import Literal
+from typing import TYPE_CHECKING, Any, Literal
 
 from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -13,6 +13,11 @@ __all__ = ["Settings", "get_settings"]
 
 class Settings(BaseSettings):
     """Application settings with environment variable support."""
+
+    if TYPE_CHECKING:
+        # Pydantic dynamically generates a rich `__init__` for settings models.
+        # Some type checkers miss those parameters; declare the ones we rely on in tests.
+        def __init__(self, *, _env_file: Any | None = None, **values: Any) -> None: ...
 
     model_config = SettingsConfigDict(
         env_file=".env",
@@ -26,6 +31,13 @@ class Settings(BaseSettings):
     slow_mo: int = Field(default=50, ge=0, le=500, description="Slow down operations by ms")
     browser_type: Literal["chromium", "firefox", "webkit"] = Field(
         default="chromium", description="Browser engine to use"
+    )
+    disable_browser_sandbox: bool = Field(
+        default=False,
+        description=(
+            "Disable the Chromium sandbox (unsafe). "
+            "Only enable this in hardened containers where the sandbox is unavailable."
+        ),
     )
 
     # Anti-detection settings
@@ -45,9 +57,15 @@ class Settings(BaseSettings):
 
     # Rate limiting
     min_request_interval_sec: float = Field(
-        default=2.0, ge=1.0, description="Minimum seconds between requests"
+        default=2.0,
+        ge=0.0,
+        description="Minimum seconds between requests (0 disables the minimum-gap limiter)",
     )
-    max_requests_per_hour: int = Field(default=100, ge=10, description="Maximum requests per hour")
+    max_requests_per_hour: int = Field(
+        default=100,
+        ge=0,
+        description="Maximum requests per hour (0 disables the hourly limiter)",
+    )
 
     @property
     def job_ids_dir(self) -> Path:

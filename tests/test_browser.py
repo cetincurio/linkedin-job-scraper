@@ -1,10 +1,12 @@
 """Tests for browser stealth configuration."""
 
+import asyncio
 from typing import Any, cast
 
 from playwright.async_api import BrowserContext, Page
 
 from linkedin_scraper.browser import stealth as stealth_module
+from linkedin_scraper.browser.context import BrowserManager
 from linkedin_scraper.browser.stealth import (
     USER_AGENTS,
     VIEWPORTS,
@@ -152,3 +154,32 @@ class TestStealthApplication:
 
         assert len(page.scripts) == 1
         assert "navigator.webdriver" in page.scripts[0]
+
+
+class DummyNewPage:
+    """Minimal page stub for BrowserManager's new-page hook."""
+
+    url = "about:blank"
+
+
+class TestBrowserManagerHooks:
+    async def test_on_new_page_sync_schedules_injection(
+        self,
+        monkeypatch,
+        test_settings,
+    ) -> None:
+        """Ensure Playwright sync event hooks schedule async injection."""
+        manager = BrowserManager(test_settings)
+        injected = asyncio.Event()
+
+        async def _fake_inject(page: Any) -> None:
+            page.injected = True
+            injected.set()
+
+        monkeypatch.setattr("linkedin_scraper.browser.context.inject_evasion_scripts", _fake_inject)
+
+        page = DummyNewPage()
+        manager._on_new_page_sync(cast(Page, page))
+
+        await asyncio.wait_for(injected.wait(), timeout=1)
+        assert getattr(page, "injected", False) is True

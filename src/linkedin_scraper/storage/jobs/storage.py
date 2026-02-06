@@ -19,6 +19,17 @@ from .exporter import export_job_details_jsonl
 logger = get_logger(__name__)
 
 
+async def _atomic_write_text(path: Path, text: str) -> None:
+    """Write text to a file atomically (best-effort) to avoid partial writes."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    tmp_path = path.with_suffix(path.suffix + ".tmp")
+
+    async with aiofiles.open(tmp_path, "w", encoding="utf-8") as f:
+        await f.write(text)
+
+    tmp_path.replace(path)
+
+
 class JobStorage:
     """Handles persistence of job IDs and job details."""
 
@@ -59,13 +70,16 @@ class JobStorage:
         if not jobs:
             return 0
 
-        by_source: dict[JobIdSource, list[JobId]] = {}
+        by_source: dict[JobIdSource, dict[str, JobId]] = {}
         for job in jobs:
-            by_source.setdefault(job.source, []).append(job)
+            by_source.setdefault(job.source, {})
+            # De-duplicate within the input batch to avoid writing duplicates.
+            by_source[job.source].setdefault(job.job_id, job)
 
         saved_count = 0
 
-        for source, source_jobs in by_source.items():
+        for source, source_jobs_by_id in by_source.items():
+            source_jobs = list(source_jobs_by_id.values())
             file_path = self._get_job_ids_file(source)
             existing = await self._load_job_ids_from_file(file_path)
             existing_ids = {j.job_id for j in existing}
@@ -85,7 +99,7 @@ class JobStorage:
             return []
 
         try:
-            async with aiofiles.open(file_path) as f:
+            async with aiofiles.open(file_path, encoding="utf-8") as f:
                 content = await f.read()
                 data = json.loads(content)
                 return [JobId.model_validate(item) for item in data]
@@ -96,8 +110,7 @@ class JobStorage:
     async def _save_job_ids_to_file(self, file_path: Path, jobs: list[JobId]) -> None:
         """Save job IDs to a JSON file."""
         data = [job.model_dump(mode="json") for job in jobs]
-        async with aiofiles.open(file_path, "w") as f:
-            await f.write(json.dumps(data, indent=2, default=str))
+        await _atomic_write_text(file_path, json.dumps(data, indent=2, ensure_ascii=False) + "\n")
 
     async def get_job_ids(
         self,
@@ -144,8 +157,7 @@ class JobStorage:
         file_path = self._get_job_detail_file(detail.job_id)
         data = detail.model_dump(mode="json")
 
-        async with aiofiles.open(file_path, "w") as f:
-            await f.write(json.dumps(data, indent=2, default=str))
+        await _atomic_write_text(file_path, json.dumps(data, indent=2, ensure_ascii=False) + "\n")
 
         logger.debug(f"Saved job detail: {detail.job_id}")
 
@@ -156,7 +168,7 @@ class JobStorage:
             return None
 
         try:
-            async with aiofiles.open(file_path) as f:
+            async with aiofiles.open(file_path, encoding="utf-8") as f:
                 content = await f.read()
                 data = json.loads(content)
                 return JobDetail.model_validate(data)

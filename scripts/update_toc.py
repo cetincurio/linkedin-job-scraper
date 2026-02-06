@@ -89,19 +89,28 @@ def _build_toc_block(toc_lines: list[str]) -> str:
 
 def update_file(path: Path) -> bool:
     """Update a single file in-place. Returns True if modified."""
-    text = path.read_text()
+    text = path.read_text(encoding="utf-8")
     if START not in text or END not in text:
         return False
 
-    pre, rest = text.split(START, 1)
-    _old, post = rest.split(END, 1)
+    pre, start_sep, rest = text.partition(START)
+    if not start_sep:
+        return False
+
+    _old, end_sep, post = rest.partition(END)
+    if not end_sep:
+        return False
 
     toc_lines = _extract_toc_lines(text.splitlines())
     toc_block = _build_toc_block(toc_lines)
 
-    new_text = pre + "\n" + toc_block + post
+    # If the TOC starts the file, avoid accumulating blank lines at the top.
+    if pre.strip() == "":
+        pre = ""
+
+    new_text = pre + toc_block + post
     if new_text != text:
-        path.write_text(new_text)
+        path.write_text(new_text, encoding="utf-8")
         return True
     return False
 
@@ -115,11 +124,10 @@ def main() -> None:
     """Update TOCs for the default documentation set."""
     default_files = [
         Path("README.md"),
-        Path("docs/index.md"),
-        Path("docs/usage.md"),
-        Path("docs/dev/refactoring-2026.md"),
         Path("CHANGELOG.md"),
         Path("CONTRIBUTING.md"),
+        Path("RELEASE.md"),
+        *sorted(Path("docs").rglob("*.md")),
     ]
 
     updated = update_files(default_files)

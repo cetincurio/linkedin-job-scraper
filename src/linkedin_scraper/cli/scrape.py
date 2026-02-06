@@ -51,6 +51,10 @@ def scrape(
         linkedin-scraper scrape --limit 10
         linkedin-scraper scrape --job-id 1234567890
     """
+    if limit is not None and limit < 1:
+        console.print("[red]--limit must be >= 1[/red]")
+        raise typer.Exit(1)
+
     source_filter = None
     if source:
         try:

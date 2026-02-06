@@ -1,5 +1,5 @@
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
-<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+
 **Table of Contents**  *generated with [DocToc](https://github.com/thlorenz/doctoc)*
 
 - [Installation](#installation)
@@ -20,7 +20,7 @@
 
 ## Requirements
 
-- Python 3.14 or higher
+- Python 3.13 or higher
 - A Chromium-based browser (installed automatically)
 
 ## Installation Methods
@@ -86,7 +86,7 @@ For contributors:
 
 ```bash
 # Install with dev dependencies
-uv sync --dev
+uv sync --extra dev
 
 # Install pre-commit hooks
 uv run pre-commit install

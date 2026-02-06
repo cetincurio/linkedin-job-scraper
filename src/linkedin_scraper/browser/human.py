@@ -6,7 +6,7 @@ import random
 
 from playwright.async_api import Locator, Page
 
-from linkedin_scraper.config import get_settings
+from linkedin_scraper.config import Settings, get_settings
 from linkedin_scraper.logging_config import get_logger
 
 
@@ -18,9 +18,9 @@ logger = get_logger(__name__)
 class HumanBehavior:
     """Simulates human-like interactions with web pages."""
 
-    def __init__(self, page: Page) -> None:
+    def __init__(self, page: Page, settings: Settings | None = None) -> None:
         self.page = page
-        self._settings = get_settings()
+        self._settings = settings or get_settings()
         self._last_action_time: float = 0
 
     async def random_delay(self, min_ms: int | None = None, max_ms: int | None = None) -> None:

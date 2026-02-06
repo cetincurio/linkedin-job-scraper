@@ -1,7 +1,11 @@
 # Makefile for linkedin-job-scraper
 # Simple commands for common development tasks
 
-.PHONY: help install dev test lint format type-check docs clean build release
+.PHONY: \
+	help install dev \
+	test test-cov lint format type-check check \
+	docs docs-serve \
+	clean build publish release
 
 # Default target
 help:
@@ -25,7 +29,7 @@ install:
 
 # Install with dev dependencies
 dev:
-	uv sync --dev
+	uv sync --extra dev
 	uv run pre-commit install
 	uv run playwright install chromium
 
@@ -84,6 +88,14 @@ publish: build
 # Bump version + create tag (does not push)
 release:
 	@if [ -z "$(VERSION)" ]; then echo "VERSION is required (e.g., make release VERSION=0.2.0)"; exit 1; fi
-	@python - <<'PY'\nimport re\nfrom pathlib import Path\n\npath = Path(\"pyproject.toml\")\ntext = path.read_text()\nnew_version = \"$(VERSION)\"\npattern = r'^(version\\s*=\\s*\")([^\"]+)(\"\\s*)$'\nrepl = r\"\\\\1\" + new_version + r\"\\\\3\"\nnew_text, count = re.subn(pattern, repl, text, flags=re.MULTILINE)\nif count != 1:\n    raise SystemExit(\"Failed to update version in pyproject.toml\")\npath.write_text(new_text)\nprint(f\"Updated pyproject.toml version to {new_version}\")\nPY
+	@bad="$$(git status --porcelain | awk '{print $$2}' | grep -vE '^(pyproject\\.toml|CHANGELOG\\.md)$$' || true)"; \
+	if [ -n "$$bad" ]; then \
+		echo "Refusing to create a release with unrelated working tree changes:"; \
+		echo "$$bad"; \
+		exit 1; \
+	fi
+	@uv run python - <<'PY'\nimport re\nfrom pathlib import Path\n\npath = Path(\"pyproject.toml\")\ntext = path.read_text(encoding=\"utf-8\")\nnew_version = \"$(VERSION)\"\npattern = r'^(version\\s*=\\s*\")([^\"]+)(\"\\s*)$'\nrepl = r\"\\\\1\" + new_version + r\"\\\\3\"\nnew_text, count = re.subn(pattern, repl, text, flags=re.MULTILINE)\nif count != 1:\n    raise SystemExit(\"Failed to update version in pyproject.toml\")\npath.write_text(new_text, encoding=\"utf-8\")\nprint(f\"Updated pyproject.toml version to {new_version}\")\nPY
+	@git add pyproject.toml CHANGELOG.md
+	@if git diff --cached --quiet; then echo "No changes to commit."; else git commit -m "chore(release): v$(VERSION)"; fi
 	@git tag v$(VERSION)
-	@echo "Created git tag v$(VERSION). Review CHANGELOG.md before pushing."
+	@echo "Created git tag v$(VERSION). Push with: git push --follow-tags"

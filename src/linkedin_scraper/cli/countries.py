@@ -17,17 +17,26 @@ def countries() -> None:
     table.add_column("Country", style="cyan")
     table.add_column("Codes", style="white")
 
-    country_codes: dict[str, list[str]] = {}
-    for code, geo_id in COUNTRY_GEO_IDS.items():
-        if len(code) > 2:
-            country_codes.setdefault(code.title(), []).insert(0, code)
-        else:
-            for name, gid in COUNTRY_GEO_IDS.items():
-                if gid == geo_id and len(name) > 2:
-                    country_codes.setdefault(name.title(), []).append(code.upper())
-                    break
+    # Build a stable mapping from geoId -> canonical country name + codes.
+    # COUNTRY_GEO_IDS also contains aliases like "usa", which we intentionally omit from display.
+    by_geo: dict[str, dict[str, list[str]]] = {}
+    for key, geo_id in COUNTRY_GEO_IDS.items():
+        entry = by_geo.setdefault(geo_id, {"names": [], "codes": []})
+        if len(key) == 2:
+            entry["codes"].append(key.upper())
+        elif key != "usa":
+            entry["names"].append(key)
 
-    for country, codes in sorted(country_codes.items()):
-        table.add_row(country, ", ".join(codes))
+    rows: list[tuple[str, list[str]]] = []
+    for entry in by_geo.values():
+        if not entry["names"]:
+            continue
+        # Prefer longer, more descriptive names (e.g. "united states" over "germany").
+        canonical = sorted(entry["names"], key=lambda n: (n.count(" "), len(n)), reverse=True)[0]
+        codes = sorted(set(entry["codes"]))
+        rows.append((canonical.title(), codes))
+
+    for country, codes in sorted(rows, key=lambda r: r[0]):
+        table.add_row(country, ", ".join(codes) if codes else "-")
 
     console.print(table)

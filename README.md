@@ -1,12 +1,5 @@
-
-
-
-
-
-
-
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
-<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+
 **Table of Contents**  *generated with [DocToc](https://github.com/thlorenz/doctoc)*
 
 - [LinkedIn Job Scraper](#linkedin-job-scraper)
@@ -48,7 +41,7 @@
 [![CI](https://github.com/cetincurio/linkedin-job-scraper/actions/workflows/ci.yml/badge.svg)](https://github.com/cetincurio/linkedin-job-scraper/actions/workflows/ci.yml)
 [![Release](https://github.com/cetincurio/linkedin-job-scraper/actions/workflows/release.yml/badge.svg)](https://github.com/cetincurio/linkedin-job-scraper/actions/workflows/release.yml)
 [![Docs](https://img.shields.io/website?url=https%3A%2F%2Fcetincurio.github.io%2Flinkedin-job-scraper%2F&label=docs)](https://cetincurio.github.io/linkedin-job-scraper/)
-[![Python 3.14+](https://img.shields.io/badge/python-3.14+-blue.svg)](https://www.python.org/downloads/)
+[![Python 3.13+](https://img.shields.io/badge/python-3.13+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 [![uv](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/uv/main/assets/badge/v0.json)](https://github.com/astral-sh/uv)
@@ -89,7 +82,7 @@ A Python-based LinkedIn public job ads scraper with stealth capabilities, featur
 
 ### Prerequisites
 
-- Python 3.14+
+- Python 3.13+
 - [uv](https://docs.astral.sh/uv/) (recommended) or pip
 
 ### Quick Start with uv (Recommended)
@@ -179,9 +172,11 @@ Create a `.env` file in the project root:
 ```env
 LINKEDIN_SCRAPER_HEADLESS=false
 LINKEDIN_SCRAPER_SLOW_MO=50
+LINKEDIN_SCRAPER_DISABLE_BROWSER_SANDBOX=false
 LINKEDIN_SCRAPER_MIN_DELAY_MS=800
 LINKEDIN_SCRAPER_MAX_DELAY_MS=3000
 LINKEDIN_SCRAPER_MAX_PAGES_PER_SESSION=10
+LINKEDIN_SCRAPER_MIN_REQUEST_INTERVAL_SEC=2.0
 LINKEDIN_SCRAPER_MAX_REQUESTS_PER_HOUR=100
 ```
 
@@ -191,11 +186,13 @@ LINKEDIN_SCRAPER_MAX_REQUESTS_PER_HOUR=100
 | ----------------------- | ------- | -------------------------------- |
 | `headless`              | `false` | Run browser without GUI          |
 | `slow_mo`               | `50`    | Slowdown between operations (ms) |
+| `disable_browser_sandbox` | `false` | Disable Chromium sandbox (unsafe; containers only) |
 | `min_delay_ms`          | `800`   | Minimum delay between actions    |
 | `max_delay_ms`          | `3000`  | Maximum delay between actions    |
 | `typing_delay_ms`       | `80`    | Delay between keystrokes         |
 | `max_pages_per_session` | `10`    | Max pages to scrape per run      |
-| `max_requests_per_hour` | `100`   | Rate limit per hour              |
+| `min_request_interval_sec` | `2.0` | Min seconds between requests (0 disables gap limiter) |
+| `max_requests_per_hour` | `100`   | Rate limit per hour (0 disables hourly limiter) |
 
 ## Project Structure
 
@@ -347,7 +344,7 @@ This project uses `uv_build` (the uv build backend) for fast, modern packaging. 
 
 ```bash
 # Install dev dependencies
-uv sync --dev
+uv sync --extra dev
 
 # Install pre-commit hooks
 uv run pre-commit install
@@ -381,7 +378,7 @@ make release     # Bump version + tag (VERSION=0.1.1)
 
 ```bash
 # Build docs
-uv sync --group docs
+uv sync --extra docs
 uv run mkdocs build
 
 # Serve locally

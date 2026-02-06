@@ -1,12 +1,5 @@
-
-
-
-
-
-
-
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
-<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+
 **Table of Contents**  *generated with [DocToc](https://github.com/thlorenz/doctoc)*
 
 - [Project Refactoring Guide (2026 Best Practices)](#project-refactoring-guide-2026-best-practices)
@@ -24,26 +17,26 @@
   - [4. pyproject.toml Reorganization](#4-pyprojecttoml-reorganization)
     - [Structure (2026 Best Practice)](#structure-2026-best-practice)
   - [5. Testing with pytest-asyncio](#5-testing-with-pytest-asyncio)
-    - [Problem](#problem-1)
-    - [Solution](#solution-1)
-    - [Commands](#commands-1)
+    - [Problem](#problem)
+    - [Solution](#solution)
+    - [Commands](#commands)
   - [6. Pre-commit Simplification](#6-pre-commit-simplification)
-    - [Problem](#problem-2)
-    - [Solution](#solution-2)
-    - [Commands](#commands-2)
+    - [Problem](#problem)
+    - [Solution](#solution)
+    - [Commands](#commands)
   - [7. Documentation with MkDocs](#7-documentation-with-mkdocs)
     - [Custom Fonts (mkdocs.yml)](#custom-fonts-mkdocsyml)
     - [Build with Strict Mode](#build-with-strict-mode)
     - [Serve Locally](#serve-locally)
   - [8. Multi-Account Git Setup](#8-multi-account-git-setup)
-    - [Problem](#problem-3)
-    - [Solution](#solution-3)
+    - [Problem](#problem)
+    - [Solution](#solution)
     - [Step 1: Generate SSH Key](#step-1-generate-ssh-key)
     - [Step 2: Configure SSH (`~/.ssh/config`)](#step-2-configure-ssh-sshconfig)
     - [Step 3: Add Key to GitHub](#step-3-add-key-to-github)
     - [Step 4: Set Local Git Config (per-repo)](#step-4-set-local-git-config-per-repo)
     - [Step 5: Add Remote with Alias](#step-5-add-remote-with-alias)
-    - [Step 6: Verify & Push](#step-6-verify--push)
+    - [Step 6: Verify & Push](#step-6-verify-push)
   - [Quick Reference Commands](#quick-reference-commands)
   - [Files Modified](#files-modified)
 

@@ -53,7 +53,11 @@ repos:
       #   args: [--branch, main, --branch, staging]
       - id: trailing-whitespace
 
-  - repo: https://github.com/thlorenz/doctoc
-    rev: v2.2.0
+  - repo: local
     hooks:
-      - id: doctoc
+      - id: update-toc
+        name: update-toc (scripts/update_toc.py)
+        entry: python scripts/update_toc.py
+        language: python
+        pass_filenames: false
+        always_run: true

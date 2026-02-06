@@ -3,6 +3,7 @@
 import asyncio
 from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
+from typing import Any
 
 from playwright.async_api import Browser, BrowserContext, Page, async_playwright
 
@@ -26,6 +27,32 @@ class BrowserManager:
         self._context: BrowserContext | None = None
         self._stealth_config: StealthConfig | None = None
 
+    def _get_launch_options(self) -> dict[str, Any]:
+        """Build Playwright launch options based on current settings."""
+        args: list[str] = []
+        if self._settings.browser_type == "chromium":
+            args = [
+                "--disable-blink-features=AutomationControlled",
+                "--disable-dev-shm-usage",
+                "--disable-infobars",
+                "--disable-extensions",
+                "--disable-gpu",
+                "--window-size=1920,1080",
+            ]
+
+            if self._settings.disable_browser_sandbox:
+                logger.warning(
+                    "Chromium sandbox disabled (unsafe). "
+                    "Enable this only when required (e.g., some containers)."
+                )
+                args.extend(["--no-sandbox", "--disable-setuid-sandbox"])
+
+        return {
+            "headless": self._settings.headless,
+            "slow_mo": self._settings.slow_mo,
+            "args": args,
+        }
+
     @asynccontextmanager
     async def launch(
         self,
@@ -44,21 +71,7 @@ class BrowserManager:
         async with async_playwright() as playwright:
             logger.info(f"Launching {self._settings.browser_type} browser")
 
-            # Browser launch options
-            launch_options = {
-                "headless": self._settings.headless,
-                "slow_mo": self._settings.slow_mo,
-                "args": [
-                    "--disable-blink-features=AutomationControlled",
-                    "--disable-dev-shm-usage",
-                    "--no-sandbox",
-                    "--disable-setuid-sandbox",
-                    "--disable-infobars",
-                    "--disable-extensions",
-                    "--disable-gpu",
-                    "--window-size=1920,1080",
-                ],
-            }
+            launch_options = self._get_launch_options()
 
             browser_type = getattr(playwright, self._settings.browser_type)
             self._browser = await browser_type.launch(**launch_options)
@@ -73,7 +86,8 @@ class BrowserManager:
             await apply_stealth(self._context, self._stealth_config)
 
             # Set up page event handlers
-            self._context.on("page", self._on_new_page)
+            # Playwright event handlers are invoked synchronously; schedule async work explicitly.
+            self._context.on("page", self._on_new_page_sync)
 
             logger.info("Browser launched with stealth configuration")
 
@@ -81,6 +95,20 @@ class BrowserManager:
                 yield self._context
             finally:
                 await self._cleanup()
+
+    def _on_new_page_sync(self, page: Page) -> None:
+        """Sync wrapper for Playwright events: schedule async script injection."""
+        task = asyncio.create_task(self._on_new_page(page))
+
+        def _log_failure(t: asyncio.Task[None]) -> None:
+            try:
+                t.result()
+            except asyncio.CancelledError:
+                return
+            except Exception:
+                logger.exception("Failed to inject evasion scripts into new page")
+
+        task.add_done_callback(_log_failure)
 
     async def _on_new_page(self, page: Page) -> None:
         """Handle new page creation - inject evasion scripts."""
@@ -114,7 +142,7 @@ class BrowserManager:
         """
         async with self.launch(stealth_config) as context:
             page = await context.new_page()
-            human = HumanBehavior(page)
+            human = HumanBehavior(page, settings=self._settings)
 
             # Set default timeouts
             page.set_default_timeout(self._settings.page_load_timeout_ms)
@@ -124,37 +152,3 @@ class BrowserManager:
                 yield page, human
             finally:
                 await page.close()
-
-
-async def test_stealth() -> None:
-    """Test stealth configuration against bot detection sites."""
-    manager = BrowserManager()
-
-    async with manager.new_page() as (page, human):
-        logger.info("Testing stealth configuration...")
-
-        # Test against bot detection site
-        await page.goto("https://bot.sannysoft.com/")
-        await human.simulate_reading(3, 5)
-
-        # Take screenshot for verification
-        settings = get_settings()
-        screenshot_path = settings.screenshots_dir / "stealth_test.png"
-        await page.screenshot(path=str(screenshot_path), full_page=True)
-        logger.info(f"Screenshot saved to {screenshot_path}")
-
-        # Check webdriver flag
-        webdriver = await page.evaluate("navigator.webdriver")
-        logger.info(f"navigator.webdriver = {webdriver}")
-
-        if webdriver:
-            logger.warning("Stealth may not be fully effective!")
-        else:
-            logger.info("Stealth check passed: webdriver is undefined")
-
-
-if __name__ == "__main__":
-    from linkedin_scraper.logging_config import setup_logging
-
-    setup_logging()
-    asyncio.run(test_stealth())

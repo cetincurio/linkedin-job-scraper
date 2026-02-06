@@ -7,6 +7,7 @@ from typing import Any
 
 from textual import on, work
 from textual.widgets import Button, DataTable, Input, ProgressBar, Select, TabbedContent
+from textual.worker import Worker
 
 from linkedin_scraper.logging_config import get_logger
 from linkedin_scraper.models.job import JobIdSource
@@ -15,6 +16,25 @@ from linkedin_scraper.scrapers.search import JobSearchScraper
 
 
 logger = get_logger(__name__)
+
+
+def _parse_int(
+    value: str,
+    *,
+    default: int | None = None,
+    min_value: int | None = None,
+) -> int:
+    """Parse an int from user input, with optional default and minimum."""
+    text = value.strip()
+    if not text:
+        if default is None:
+            raise ValueError("Value is required")
+        return default
+
+    number = int(text)
+    if min_value is not None and number < min_value:
+        raise ValueError(f"Value must be >= {min_value}")
+    return number
 
 
 class SearchHandlers:
@@ -29,7 +49,11 @@ class SearchHandlers:
 
         keyword = keyword_input.value.strip()
         country = country_select.value
-        max_pages = int(max_pages_input.value or "10")
+        try:
+            max_pages = _parse_int(max_pages_input.value, default=10, min_value=1)
+        except ValueError as err:
+            self.log_message(f"[red]Error: Invalid max pages ({err})[/red]")
+            return
 
         if not keyword:
             self.log_message("[red]Error: Please enter a search keyword[/red]")
@@ -40,7 +64,15 @@ class SearchHandlers:
             return
 
         self.log_message(f"[yellow]Starting search: '{keyword}' in {country}...[/yellow]")
-        self._run_search(keyword, str(country), max_pages)
+        self._search_worker = self._run_search(keyword, str(country), max_pages)
+
+    @on(Button.Pressed, "#btn-stop-search")
+    def on_stop_search_pressed(self: Any) -> None:
+        """Cancel the running search worker, if any."""
+        worker: Worker[Any] | None = getattr(self, "_search_worker", None)
+        if worker and not worker.is_finished:
+            worker.cancel()
+            self.log_message("[dim]Search cancelled[/dim]")
 
     @work(exclusive=True)
     async def _run_search(
@@ -67,6 +99,9 @@ class SearchHandlers:
 
             await self._refresh_stats()
 
+        except asyncio.CancelledError:
+            self.log_message("[dim]Search cancelled[/dim]")
+            raise
         except Exception as e:
             self.log_message(f"[red]Search error: {e}[/red]")
             logger.exception("Search error")
@@ -74,6 +109,7 @@ class SearchHandlers:
         finally:
             btn_search.disabled = False
             btn_stop.disabled = True
+            self._search_worker = None
 
 
 class ScrapeHandlers:
@@ -87,13 +123,25 @@ class ScrapeHandlers:
         job_id_input = self.query_one("#scrape-job-id", Input)
 
         source = str(source_select.value) if source_select.value != "all" else None
-        limit = int(limit_input.value or "10")
+        try:
+            limit = _parse_int(limit_input.value, default=10, min_value=1)
+        except ValueError as err:
+            self.log_message(f"[red]Error: Invalid limit ({err})[/red]")
+            return
         job_id = job_id_input.value.strip() or None
 
         self.log_message(
             f"[yellow]Starting scrape (limit={limit}, source={source or 'all'})...[/yellow]"
         )
-        self._run_scrape(source, limit, job_id)
+        self._scrape_worker = self._run_scrape(source, limit, job_id)
+
+    @on(Button.Pressed, "#btn-stop-scrape")
+    def on_stop_scrape_pressed(self: Any) -> None:
+        """Cancel the running scrape worker, if any."""
+        worker: Worker[Any] | None = getattr(self, "_scrape_worker", None)
+        if worker and not worker.is_finished:
+            worker.cancel()
+            self.log_message("[dim]Scrape cancelled[/dim]")
 
     @work(exclusive=True)
     async def _run_scrape(
@@ -141,6 +189,9 @@ class ScrapeHandlers:
             tabbed = self.query_one(TabbedContent)
             tabbed.active = "tab-results"
 
+        except asyncio.CancelledError:
+            self.log_message("[dim]Scrape cancelled[/dim]")
+            raise
         except Exception as e:
             self.log_message(f"[red]Scrape error: {e}[/red]")
             logger.exception("Scrape error")
@@ -148,6 +199,7 @@ class ScrapeHandlers:
         finally:
             btn_scrape.disabled = False
             btn_stop.disabled = True
+            self._scrape_worker = None
 
 
 class LoopHandlers:
@@ -162,7 +214,11 @@ class LoopHandlers:
 
         keyword = keyword_input.value.strip()
         country = country_select.value
-        cycles = int(cycles_input.value or "3")
+        try:
+            cycles = _parse_int(cycles_input.value, default=3, min_value=1)
+        except ValueError as err:
+            self.log_message(f"[red]Error: Invalid cycles ({err})[/red]")
+            return
 
         if not keyword:
             self.log_message("[red]Error: Please enter a search keyword[/red]")
@@ -175,7 +231,15 @@ class LoopHandlers:
         self.log_message(
             f"[yellow]Starting loop: '{keyword}' in {country}, {cycles} cycles...[/yellow]"
         )
-        self._run_loop(keyword, str(country), cycles)
+        self._loop_worker = self._run_loop(keyword, str(country), cycles)
+
+    @on(Button.Pressed, "#btn-stop-loop")
+    def on_stop_loop_pressed(self: Any) -> None:
+        """Cancel the running loop worker, if any."""
+        worker: Worker[Any] | None = getattr(self, "_loop_worker", None)
+        if worker and not worker.is_finished:
+            worker.cancel()
+            self.log_message("[dim]Loop cancelled[/dim]")
 
     @work(exclusive=True)
     async def _run_loop(
@@ -217,6 +281,9 @@ class LoopHandlers:
             self.log_message("[green]Loop completed![/green]")
             progress.update(progress=100)
 
+        except asyncio.CancelledError:
+            self.log_message("[dim]Loop cancelled[/dim]")
+            raise
         except Exception as e:
             self.log_message(f"[red]Loop error: {e}[/red]")
             logger.exception("Loop error")
@@ -224,3 +291,4 @@ class LoopHandlers:
         finally:
             btn_loop.disabled = False
             btn_stop.disabled = True
+            self._loop_worker = None

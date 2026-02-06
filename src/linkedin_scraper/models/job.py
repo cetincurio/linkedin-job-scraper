@@ -1,6 +1,6 @@
 """Pydantic models for job data."""
 
-from datetime import datetime
+from datetime import UTC, datetime
 from enum import StrEnum
 from typing import Any
 
@@ -16,6 +16,11 @@ __all__ = [
 ]
 
 
+def _now_utc() -> datetime:
+    # Use timezone-aware timestamps for persistence and interoperability.
+    return datetime.now(tz=UTC)
+
+
 class JobIdSource(StrEnum):
     """Source of the job ID."""
 
@@ -29,7 +34,7 @@ class JobId(BaseModel):
 
     job_id: str = Field(description="LinkedIn job ID")
     source: JobIdSource = Field(description="How this job ID was discovered")
-    discovered_at: datetime = Field(default_factory=datetime.now)
+    discovered_at: datetime = Field(default_factory=_now_utc)
     search_keyword: str | None = Field(default=None, description="Search keyword if from search")
     search_country: str | None = Field(default=None, description="Country filter if from search")
     parent_job_id: str | None = Field(
@@ -50,7 +55,7 @@ class JobDetail(BaseModel):
     """Detailed job information scraped from a job page."""
 
     job_id: str = Field(description="LinkedIn job ID")
-    scraped_at: datetime = Field(default_factory=datetime.now)
+    scraped_at: datetime = Field(default_factory=_now_utc)
 
     # Basic info
     title: str | None = Field(default=None)
@@ -87,14 +92,14 @@ class JobSearchResult(BaseModel):
     total_found: int = Field(default=0)
     job_ids: list[str] = Field(default_factory=list)
     pages_scraped: int = Field(default=0)
-    search_timestamp: datetime = Field(default_factory=datetime.now)
+    search_timestamp: datetime = Field(default_factory=_now_utc)
 
 
 class ScrapingSession(BaseModel):
     """Metadata for a scraping session."""
 
     session_id: str
-    started_at: datetime = Field(default_factory=datetime.now)
+    started_at: datetime = Field(default_factory=_now_utc)
     ended_at: datetime | None = Field(default=None)
     jobs_found: int = Field(default=0)
     jobs_scraped: int = Field(default=0)

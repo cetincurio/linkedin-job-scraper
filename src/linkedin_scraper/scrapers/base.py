@@ -2,6 +2,7 @@
 
 import asyncio
 import re
+import time
 from abc import ABC, abstractmethod
 from datetime import datetime
 from typing import Any
@@ -26,6 +27,7 @@ class BaseScraper(ABC):
 
     LINKEDIN_BASE_URL = "https://www.linkedin.com"
     JOBS_BASE_URL = "https://www.linkedin.com/jobs"
+    _RATE_LIMIT_MIN_WINDOW_S = 60.0
 
     def __init__(
         self,
@@ -37,6 +39,7 @@ class BaseScraper(ABC):
         self._browser_manager = BrowserManager(self._settings)
         self._request_count = 0
         self._session_start: datetime | None = None
+        self._last_request_time_mono: float | None = None
 
     @abstractmethod
     async def run(self, **kwargs: Any) -> Any:
@@ -45,20 +48,37 @@ class BaseScraper(ABC):
 
     async def _check_rate_limit(self) -> None:
         """Check and enforce rate limiting."""
+        # Respect a minimum gap between requests, independent of hourly limits.
+        min_interval = float(self._settings.min_request_interval_sec)
+        if min_interval > 0 and self._last_request_time_mono is not None:
+            elapsed = time.monotonic() - self._last_request_time_mono
+            if elapsed < min_interval:
+                await asyncio.sleep(min_interval - elapsed)
+
+        max_per_hour = self._settings.max_requests_per_hour
+        if max_per_hour <= 0:
+            self._request_count += 1
+            self._last_request_time_mono = time.monotonic()
+            return
+
         if self._session_start is None:
             self._session_start = datetime.now()
 
-        elapsed = (datetime.now() - self._session_start).total_seconds()
-        elapsed_hours = elapsed / 3600
+        elapsed_s = (datetime.now() - self._session_start).total_seconds()
+        effective_elapsed_s = max(elapsed_s, self._RATE_LIMIT_MIN_WINDOW_S)
+        elapsed_hours = effective_elapsed_s / 3600.0
 
-        if elapsed_hours > 0:
-            rate = self._request_count / elapsed_hours
-            if rate > self._settings.max_requests_per_hour:
-                wait_time = 60  # Wait a minute before continuing
-                logger.warning(f"Rate limit approaching, waiting {wait_time}s")
-                await asyncio.sleep(wait_time)
+        rate = (self._request_count / elapsed_hours) if self._request_count else 0.0
+        if rate > max_per_hour:
+            # Compute the minimum additional time needed to bring the average back under limit.
+            required_elapsed_s = (self._request_count * 3600.0) / float(max_per_hour)
+            wait_s = max(0.0, required_elapsed_s - elapsed_s)
+            if wait_s > 0:
+                logger.warning(f"Rate limit approaching, waiting {wait_s:.1f}s")
+                await asyncio.sleep(wait_s)
 
         self._request_count += 1
+        self._last_request_time_mono = time.monotonic()
 
     async def _safe_goto(
         self,
@@ -90,8 +110,8 @@ class BaseScraper(ABC):
         except PlaywrightTimeout:
             logger.error(f"Timeout loading {url}")
             return False
-        except Exception as e:
-            logger.error(f"Error navigating to {url}: {e}")
+        except Exception:
+            logger.exception("Error navigating to %s", url)
             return False
 
     async def _wait_for_element(
@@ -162,6 +182,15 @@ class BaseScraper(ABC):
         return None
 
     @staticmethod
+    def _job_id_sort_key(s: str) -> int:
+        """Sort key for job IDs.
+
+        We intentionally keep the input type narrow (`str`) so type checkers don't
+        widen the element type of the collection being sorted.
+        """
+        return int(s)
+
+    @staticmethod
     def extract_job_ids_from_html(html: str) -> list[str]:
         """Extract job IDs from HTML content."""
         # Multiple patterns for different LinkedIn page formats
@@ -175,9 +204,12 @@ class BaseScraper(ABC):
         job_ids: set[str] = set()
         for pattern in patterns:
             matches = re.findall(pattern, html)
-            job_ids.update(matches)
+        job_ids.update(matches)
 
-        return list(job_ids)
+        # Stable output is important for reproducible runs and testability.
+        # NOTE: `sorted(..., key=int)` causes type checkers to infer an overly-broad
+        # element type because `int()` accepts many inputs; keep the element type `str`.
+        return sorted(job_ids, key=BaseScraper._job_id_sort_key)
 
     async def _take_debug_screenshot(self, page: Page, name: str) -> None:
         """Take a screenshot for debugging purposes."""

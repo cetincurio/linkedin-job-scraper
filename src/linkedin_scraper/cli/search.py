@@ -39,6 +39,10 @@ def search(
     Example:
         linkedin-scraper search "python developer" germany --max-pages 20
     """
+    if max_pages < 1:
+        console.print("[red]--max-pages must be >= 1[/red]")
+        raise typer.Exit(1)
+
     require_acknowledgement(ctx)
     settings = get_settings()
     settings.headless = headless

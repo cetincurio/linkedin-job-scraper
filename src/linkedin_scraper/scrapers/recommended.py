@@ -48,7 +48,9 @@ class RecommendedJobsScraper(BaseScraper):
             stored = await self._storage.get_job_ids(source=JobIdSource.SEARCH)
             parent_job_ids = [j.job_id for j in stored if j.scraped]
 
-        if limit:
+        if limit is not None:
+            if not isinstance(limit, int) or limit < 1:
+                raise ValueError("limit must be an integer >= 1")
             parent_job_ids = parent_job_ids[:limit]
 
         if not parent_job_ids:
@@ -66,7 +68,7 @@ class RecommendedJobsScraper(BaseScraper):
                     all_recommended.extend(recommended)
                     await human.random_delay(2000, 4000)
 
-        return list(set(all_recommended))
+        return list(dict.fromkeys(all_recommended))
 
     async def extract_from_page(
         self,
@@ -112,12 +114,13 @@ class RecommendedJobsScraper(BaseScraper):
                     source=JobIdSource.RECOMMENDED,
                     parent_job_id=parent_job_id,
                 )
-                for jid in recommended_ids
+                for jid in sorted(recommended_ids, key=self._job_id_sort_key)
             ]
             saved = await self._storage.save_job_ids(jobs)
             logger.info(f"Saved {saved} new recommended job IDs from {parent_job_id}")
 
-        return list(recommended_ids)
+        # Keep the element type `str` for type checking (see note in BaseScraper).
+        return sorted(recommended_ids, key=self._job_id_sort_key)
 
     async def _extract_similar_jobs(self, page: Page) -> set[str]:
         """Extract job IDs from 'Similar jobs' section."""

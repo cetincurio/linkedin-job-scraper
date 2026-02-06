@@ -1,16 +1,9 @@
-
-
-
-
-
-
-
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
-<!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
+
 **Table of Contents**  *generated with [DocToc](https://github.com/thlorenz/doctoc)*
 
 - [Contributing to LinkedIn Job Scraper](#contributing-to-linkedin-job-scraper)
-  - [📋 Table of Contents](#-table-of-contents)
+  - [📋 Table of Contents](#table-of-contents)
   - [Code of Conduct](#code-of-conduct)
   - [Getting Started](#getting-started)
   - [Development Setup](#development-setup)
@@ -21,7 +14,7 @@
     - [Branch Naming](#branch-naming)
     - [Commit Messages](#commit-messages)
   - [Code Style](#code-style)
-    - [Formatting & Linting](#formatting--linting)
+    - [Formatting & Linting](#formatting-linting)
     - [Guidelines](#guidelines)
     - [Example](#example)
   - [Testing](#testing)
@@ -68,7 +61,7 @@ git checkout -b feature/your-feature-name
 
 ### Prerequisites
 
-- Python 3.14+
+- Python 3.13+
 - [uv](https://docs.astral.sh/uv/) (recommended) or pip
 
 ### Setup with uv (Recommended)
@@ -78,7 +71,7 @@ git checkout -b feature/your-feature-name
 curl -LsSf https://astral.sh/uv/install.sh | sh
 
 # Create virtual environment and install dependencies
-uv sync --dev
+uv sync --extra dev
 
 # Install Playwright browsers
 uv run playwright install chromium
