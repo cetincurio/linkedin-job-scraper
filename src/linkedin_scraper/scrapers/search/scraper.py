@@ -52,7 +52,14 @@ class JobSearchScraper(BaseScraper):
             geo_id=geo_id,
         )
 
-    async def run(self, **kwargs: Any) -> JobSearchResult:
+    async def run(
+        self,
+        *,
+        keyword: str | None = None,
+        country: str | None = None,
+        max_pages: int | None = None,
+        **kwargs: Any,
+    ) -> JobSearchResult:
         """
         Search for jobs and extract job IDs.
 
@@ -64,9 +71,8 @@ class JobSearchScraper(BaseScraper):
         Returns:
             JobSearchResult with all discovered job IDs
         """
-        keyword = kwargs.get("keyword")
-        country = kwargs.get("country")
-        max_pages = kwargs.get("max_pages")
+        # Keep `**kwargs` for forward compatibility with the BaseScraper interface.
+        _ = kwargs
 
         if not isinstance(keyword, str) or not isinstance(country, str):
             raise ValueError("keyword and country are required string arguments")

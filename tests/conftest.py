@@ -43,7 +43,10 @@ def test_settings(temp_data_dir: Path) -> Settings:
 async def storage(test_settings: Settings) -> AsyncGenerator[JobStorage]:
     """Create a JobStorage instance with test settings."""
     store = JobStorage(test_settings)
-    yield store
+    try:
+        yield store
+    finally:
+        store.close()
 
 
 @pytest.fixture

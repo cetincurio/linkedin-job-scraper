@@ -27,7 +27,13 @@ class RecommendedJobsScraper(BaseScraper):
     - Any other recommendation sections
     """
 
-    async def run(self, **kwargs: Any) -> list[str]:
+    async def run(
+        self,
+        *,
+        parent_job_ids: list[str] | None = None,
+        limit: int | None = None,
+        **kwargs: Any,
+    ) -> list[str]:
         """
         Standalone run to extract recommended jobs from stored job IDs.
 
@@ -41,12 +47,16 @@ class RecommendedJobsScraper(BaseScraper):
         Returns:
             List of newly discovered job IDs
         """
-        parent_job_ids = kwargs.get("parent_job_ids")
-        limit = kwargs.get("limit")
+        # Keep `**kwargs` for forward compatibility with the BaseScraper interface.
+        _ = kwargs
 
         if parent_job_ids is None:
             stored = await self._storage.get_job_ids(source=JobIdSource.SEARCH)
             parent_job_ids = [j.job_id for j in stored if j.scraped]
+        elif not isinstance(parent_job_ids, list) or any(
+            not isinstance(j, str) for j in parent_job_ids
+        ):
+            raise ValueError("parent_job_ids must be a list[str] or None")
 
         if limit is not None:
             if not isinstance(limit, int) or limit < 1:

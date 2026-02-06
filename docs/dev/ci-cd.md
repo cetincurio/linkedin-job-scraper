@@ -7,13 +7,13 @@
   - [Release Pipeline (Build + Optional Publish)](#release-pipeline-build-optional-publish)
   - [Release Checklist (Small And Practical)](#release-checklist-small-and-practical)
   - [Triggers](#triggers)
-  - [Jobs](#jobs)
-    - [Lint, Format, Type Check, Prek](#lint-format-type-check-prek)
-    - [Test (Matrix)](#test-matrix)
-    - [Build (sdist + wheel)](#build-sdist-wheel)
-    - [Test Installed Wheel](#test-installed-wheel)
-    - [Docs](#docs)
-    - [Integration](#integration)
+  - [Workflows](#workflows)
+    - [CI - Lint](#ci---lint)
+    - [CI - Tests](#ci---tests)
+    - [CI - Build](#ci---build)
+    - [CI - Docs](#ci---docs)
+    - [CI - Integration](#ci---integration)
+  - [Status Checks](#status-checks)
   - [Caching Strategy](#caching-strategy)
   - [Performance & Minimalism Principles](#performance-minimalism-principles)
   - [Future Proofing](#future-proofing)
@@ -26,7 +26,7 @@
 
 # CI/CD (2026) Overview
 
-This repo uses a modern, minimal, and fast GitHub Actions pipeline designed for 2026 best practices:
+This repo uses a modern, modular, and fast GitHub Actions pipeline designed for 2026 best practices:
 
 - Fast feedback with cached `uv` dependencies and short job timeouts.
 - Minimal surfaces: only the necessary jobs for lint, test, build, docs, and gated integration.
@@ -36,19 +36,14 @@ This repo uses a modern, minimal, and fast GitHub Actions pipeline designed for 
 
 ```mermaid
 flowchart LR
-  A[push / PR / merge queue / manual] --> B[Lint, Format, Type Check, Prek]
-  A --> C[Test Matrix: 3.13, 3.14]
-  B --> D[Build sdist + wheel]
-  C --> D
-  D --> E[Test installed wheel]
-  B --> F[Build docs]
-  C --> F
-  F --> G{main push?}
+  A[push / PR / merge queue / manual] --> L[CI - Lint]
+  A --> T[CI - Tests]
+  A --> B[CI - Build]
+  A --> D[CI - Docs]
+  M[push to main] --> I[CI - Integration]
+  D --> G{main push & ENABLE_PAGES?}
   G -- yes --> H[Deploy docs]
-  G -- no --> I[Skip]
-  D --> J{main push?}
-  J -- yes --> K[Integration Tests]
-  J -- no --> L[Skip]
+  G -- no --> S[Skip]
 ```
 
 ## Release Pipeline (Build + Optional Publish)
@@ -81,55 +76,66 @@ flowchart LR
 - `pull_request` to `main`, scoped to relevant paths.
 - `merge_group` for merge queue support.
 - `workflow_dispatch` for manual runs.
+- Docs deploy is gated by `ENABLE_PAGES=true` (repo variable).
 
-## Jobs
+## Workflows
 
-### Lint, Format, Type Check, Prek
+### CI - Lint
 
 - Installs `uv`, caches the global `uv` cache.
 - Installs dev + types extras.
 - Runs `ruff check`, `ruff format --check`, `ty`, and `prek`.
 
-### Test (Matrix)
+### CI - Tests
 
 - Python `3.13` and `3.14`.
 - Caches `uv` per Python version.
 - Runs pytest with coverage and uploads to Codecov.
 
-### Build (sdist + wheel)
+### CI - Build
 
 - Builds artifacts using `uv build`.
 - Uploads `dist/` artifacts for reuse.
 
-### Test Installed Wheel
+Includes a wheel-install smoke test in the same workflow to validate packaging.
 
-- Installs the built wheel and runs a small smoke test to ensure packaging is correct.
-
-### Docs
+### CI - Docs
 
 - Builds docs with MkDocs and deploys to GitHub Pages on `main`.
 
-### Integration
+### CI - Integration
 
 - Runs only on `push` to `main`.
 - Installs Playwright Chromium and runs integration tests.
 
+## Status Checks
+
+Recommended required checks for branch protection:
+
+- `CI - Lint`
+- `CI - Tests`
+- `CI - Build`
+- `CI - Docs`
+- (Optional) `CI - Integration`
+
 ## Caching Strategy
 
-We cache the global `uv` cache directory to avoid repeated downloads:
+We use `setup-uv`'s built-in cache to avoid repeated downloads and accelerate cold starts.
 
 ```mermaid
 flowchart LR
-  A[uv cache dir] --> B[actions/cache@v4]
-  B --> C[Restore on next run]
+  A[setup-uv cache] --> B[Restore on next run]
 ```
 
 ## Performance & Minimalism Principles
 
 - Use path filters to avoid running CI on non-code changes.
 - Use `uv` for fast dependency resolution and installation.
+- Use `uv sync --locked` and `uv run --no-sync` for reproducible, fast runs.
 - Fail fast on lint/type issues.
 - Use tight job timeouts to avoid wasted runner minutes.
+- Pin `uv` via `UV_VERSION` for reproducibility.
+- Optional cache trimming via `UV_CACHE_PRUNE=true` (repo variable).
 
 ## Future Proofing
 
@@ -159,6 +165,10 @@ GitHub for `pypi` and `testpypi`.
 
 ## Files
 
-- Workflow: `.github/workflows/ci.yml`
-- Release workflow: `.github/workflows/release.yml`
+- Workflow (lint): `.github/workflows/ci-lint.yml`
+- Workflow (tests): `.github/workflows/ci-test.yml`
+- Workflow (build): `.github/workflows/ci-build.yml`
+- Workflow (docs): `.github/workflows/ci-docs.yml`
+- Workflow (integration): `.github/workflows/ci-integration.yml`
+- Release workflow: `.github/workflows/ci-release.yml`
 - This doc: `docs/dev/ci-cd.md`

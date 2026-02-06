@@ -101,6 +101,9 @@ Created a proper `tyconfig.json` with comprehensive excludes:
 
 ```bash
 uv run ty check src/
+
+# If you activated a venv:
+# uv run --active ty check src/
 ```
 
 ---
@@ -232,10 +235,13 @@ addopts = ["-ra", "-q", "--strict-markers", "--strict-config"]
 ### Commands
 
 ```bash
-# Sync test dependencies first
+# Install dev/test dependencies first
 uv sync --extra test
 
 # Run tests
+uv run pytest
+
+# Optional: parallel run
 uv run pytest -n auto --tb=short
 ```
 
@@ -380,12 +386,13 @@ git push -u origin main
 
 ```bash
 # Full quality check
-ruff clean && ruff format && ruff check --fix
+uv run ruff check src/ tests/
+uv run ruff format src/ tests/
 uv run ty check src/
-uv sync --extra test && uv run pytest -n auto
+uv run pytest
 
 # Prek
-prek run --all-files
+uv run prek run --all-files
 
 # Documentation
 uv run mkdocs build --strict

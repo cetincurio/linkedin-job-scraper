@@ -120,14 +120,23 @@ asyncio.run(main())
 
 ## Data Storage
 
-Data is stored in JSON format:
+Data is stored as merge-friendly ledgers plus a local index:
 
 ```
 data/
-├── job_ids/
-│   ├── search_job_ids.json      # From Feature 1
-│   └── recommended_job_ids.json # From Feature 3
+├── ledger/
+│   ├── job_ids/
+│   │   ├── <run_id>.jsonl             # Job ID discoveries (Feature 1 & 3)
+│   └── job_scrapes/
+│       └── <run_id>.jsonl             # Scrape completion events (Feature 2)
+├── index/
+│   └── job_index.sqlite3              # Local-only SQLite index (derived from ledgers)
 └── job_details/
     ├── 1234567890.json          # Individual job details
     └── ...
 ```
+
+Notes:
+
+- The `data/ledger/` files are designed to be synced across machines (e.g., via Git).
+- The `data/index/` database is derived and can be deleted/rebuilt at any time.

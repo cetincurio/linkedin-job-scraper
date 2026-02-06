@@ -96,6 +96,7 @@ docs = [
     "mkdocs-material>=9.7.1,<10.0.0",
     "mkdocs-minify-plugin>=0.8.0,<1.0.0",
     "mkdocstrings[python]>=1.0.2,<2.0.0",
+    "zensical>=0.0.21,<1.0.0",
 ]
 all = [
     "linkedin-job-scraper[dev]",
@@ -115,6 +116,7 @@ docs = [
     "mkdocs-material>=9.7.1,<10.0.0",
     "mkdocs-minify-plugin>=0.8.0,<1.0.0",
     "mkdocstrings[python]>=1.0.2,<2.0.0",
+    "zensical>=0.0.21,<1.0.0",
 ]
 
 # -----------------------------------------------------------------------------

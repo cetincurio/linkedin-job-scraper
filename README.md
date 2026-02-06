@@ -28,7 +28,7 @@
   - [Release Checklist](#release-checklist)
   - [Development](#development)
     - [Build Backend](#build-backend)
-    - [Make Commands](#make-commands)
+    - [Make Commands (Optional)](#make-commands-optional)
     - [Documentation](#documentation)
   - [Contributing](#contributing)
   - [License](#license)
@@ -38,7 +38,10 @@
 
 # LinkedIn Job Scraper
 
-[![CI](https://github.com/cetincurio/linkedin-job-scraper/actions/workflows/ci.yml/badge.svg)](https://github.com/cetincurio/linkedin-job-scraper/actions/workflows/ci.yml)
+[![CI - Lint](https://github.com/cetincurio/linkedin-job-scraper/actions/workflows/ci-lint.yml/badge.svg)](https://github.com/cetincurio/linkedin-job-scraper/actions/workflows/ci-lint.yml)
+[![CI - Tests](https://github.com/cetincurio/linkedin-job-scraper/actions/workflows/ci-test.yml/badge.svg)](https://github.com/cetincurio/linkedin-job-scraper/actions/workflows/ci-test.yml)
+[![CI - Build](https://github.com/cetincurio/linkedin-job-scraper/actions/workflows/ci-build.yml/badge.svg)](https://github.com/cetincurio/linkedin-job-scraper/actions/workflows/ci-build.yml)
+[![CI - Docs](https://github.com/cetincurio/linkedin-job-scraper/actions/workflows/ci-docs.yml/badge.svg)](https://github.com/cetincurio/linkedin-job-scraper/actions/workflows/ci-docs.yml)
 [![Release](https://github.com/cetincurio/linkedin-job-scraper/actions/workflows/release.yml/badge.svg)](https://github.com/cetincurio/linkedin-job-scraper/actions/workflows/release.yml)
 [![Docs](https://img.shields.io/website?url=https%3A%2F%2Fcetincurio.github.io%2Flinkedin-job-scraper%2F&label=docs)](https://cetincurio.github.io/linkedin-job-scraper/)
 [![Python 3.13+](https://img.shields.io/badge/python-3.13+-blue.svg)](https://www.python.org/downloads/)
@@ -100,6 +103,10 @@ uv sync
 
 # Install Playwright browsers
 uv run playwright install chromium
+
+# If you activated a venv, prefer:
+# uv sync --active
+# uv run --active playwright install chromium
 
 # Run the CLI
 uv run linkedin-scraper --help
@@ -319,8 +326,8 @@ playwright install chromium
 
 ## CI/CD Summary
 
-- Primary CI runs on PRs and pushes with fast lint/type checks, prek, test matrix, build artifacts, wheel install tests, docs build, and optional integration tests.
-- Docs deploy automatically from `main` via GitHub Pages.
+- CI is modular: lint, tests, build, docs, and integration are separate workflows for clarity and speed.
+- Docs deploy automatically from `main` via GitHub Pages (opt-in via `ENABLE_PAGES=true`).
 - Release workflow builds sdist + wheel on tag pushes (`v*`) or manual runs.
 - TestPyPI/PyPI publishing is manual via workflow inputs.
 - Full details and diagrams live in `docs/dev/ci-cd.md`.
@@ -349,30 +356,20 @@ uv sync --extra dev
 # Install prek hooks
 uv run prek install
 
-# Run all checks
-make check
-
 # Or individually:
 uv run ruff check src/ tests/    # Lint
 uv run ruff format src/ tests/   # Format
 uv run ty check src/             # Type check
 uv run pytest                    # Test
 uv run pytest --cov              # Test with coverage
+
+# If you activated a venv, add --active:
+# uv run --active ruff check src/ tests/
 ```
 
-### Make Commands
+### Make Commands (Optional)
 
-```bash
-make help        # Show all commands
-make dev         # Setup dev environment
-make test        # Run tests
-make lint        # Run linter
-make format      # Format code
-make type-check  # Run ty
-make docs        # Build documentation
-make build       # Build package
-make release     # Bump version + tag (VERSION=0.1.1)
-```
+If you prefer Make, the repo includes shortcuts for the common uv commands.
 
 ### Documentation
 

@@ -115,6 +115,16 @@ logs/
 *.log
 
 # =============================================================================
+# Sync-Friendly Ledgers (option 2)
+# =============================================================================
+# Ledgers are append-only JSONL logs designed to be merge-friendly and safe to
+# sync across machines (e.g., via Git). The SQLite index is derived and stays local.
+!data/ledger/
+!data/ledger/**
+data/index/
+data/index/**
+
+# =============================================================================
 # Temporary & System Files
 # =============================================================================
 *.tmp

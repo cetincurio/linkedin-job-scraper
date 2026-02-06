@@ -8,7 +8,7 @@ from playwright.async_api import Page
 
 from linkedin_scraper.browser.human import HumanBehavior
 from linkedin_scraper.logging_config import get_logger
-from linkedin_scraper.models.job import JobDetail
+from linkedin_scraper.models.job import JobDetail, JobIdSource
 from linkedin_scraper.scrapers.base import BaseScraper
 from linkedin_scraper.scrapers.recommended import RecommendedJobsScraper
 
@@ -44,7 +44,15 @@ class JobDetailScraper(BaseScraper):
         super().__init__(*args, **kwargs)
         self._recommended_scraper = RecommendedJobsScraper(self._settings, self._storage)
 
-    async def run(self, **kwargs: Any) -> list[JobDetail]:
+    async def run(
+        self,
+        *,
+        job_ids: list[str] | None = None,
+        source: JobIdSource | None = None,
+        limit: int | None = None,
+        extract_recommended: bool = True,
+        **kwargs: Any,
+    ) -> list[JobDetail]:
         """
         Scrape job details for given job IDs.
 
@@ -57,14 +65,15 @@ class JobDetailScraper(BaseScraper):
         Returns:
             List of scraped JobDetail objects
         """
-        job_ids = kwargs.get("job_ids")
-        source = kwargs.get("source")
-        limit = kwargs.get("limit")
-        extract_recommended = kwargs.get("extract_recommended", True)
+        # Keep `**kwargs` for forward compatibility with the BaseScraper interface.
+        _ = kwargs
 
         if job_ids is None:
             stored_jobs = await self._storage.get_job_ids(source=source, unscraped_only=True)
             job_ids = [j.job_id for j in stored_jobs]
+        # Be defensive: callers can pass `job_ids=["..."]` from CLI/TUI and other integrations.
+        elif not isinstance(job_ids, list) or any(not isinstance(j, str) for j in job_ids):
+            raise ValueError("job_ids must be a list[str] or None")
 
         if limit is not None:
             if not isinstance(limit, int) or limit < 1:

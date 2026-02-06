@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import contextlib
 import json
 from collections.abc import Iterator
 from pathlib import Path
@@ -13,53 +14,71 @@ from linkedin_scraper.config import Settings, get_settings
 from linkedin_scraper.logging_config import get_logger
 from linkedin_scraper.models.job import JobDetail, JobId, JobIdSource
 
+from . import ingest
 from .exporter import export_job_details_jsonl
+from .index import JobIndex
+from .io import atomic_write_text
+from .ledger import LedgerWriter
 
 
 logger = get_logger(__name__)
 
 
-async def _atomic_write_text(path: Path, text: str) -> None:
-    """Write text to a file atomically (best-effort) to avoid partial writes."""
-    path.parent.mkdir(parents=True, exist_ok=True)
-    tmp_path = path.with_suffix(path.suffix + ".tmp")
-
-    async with aiofiles.open(tmp_path, "w", encoding="utf-8") as f:
-        await f.write(text)
-
-    tmp_path.replace(path)
-
-
 class JobStorage:
-    """Handles persistence of job IDs and job details."""
+    """Handles persistence of job IDs and job details.
+
+    Storage strategy (option 2):
+    - Append-only JSONL ledgers under `data/ledger/...` are merge-friendly across machines.
+    - A local-only SQLite index under `data/index/...` is derived from ledgers for fast querying.
+    """
 
     def __init__(self, settings: Settings | None = None) -> None:
         self._settings = settings or get_settings()
         self._settings.ensure_directories()
+        self._index = JobIndex(self._settings.index_db_path)
+        self._ledger = LedgerWriter(
+            job_ids_path=self._settings.ledger_job_ids_dir / f"{self._settings.run_id}.jsonl",
+            job_scrapes_path=self._settings.ledger_job_scrapes_dir
+            / f"{self._settings.run_id}.jsonl",
+        )
+        self._ingest_ledgers()
 
-    def _get_job_ids_file(self, source: JobIdSource) -> Path:
-        """Get the file path for job IDs of a specific source."""
-        return self._settings.job_ids_dir / f"{source.value}_job_ids.json"
+    def close(self) -> None:
+        self._index.close()
+
+    def __del__(self) -> None:
+        # Best-effort close to avoid ResourceWarning in short-lived CLI runs/tests.
+        with contextlib.suppress(Exception):
+            self.close()
 
     def _get_job_detail_file(self, job_id: str) -> Path:
         """Get the file path for a job detail."""
         return self._settings.job_details_dir / f"{job_id}.json"
 
+    def _ingest_ledgers(self) -> None:
+        """Ingest any new ledger data into the local index (idempotent)."""
+        self._ingest_ledger_dir(self._settings.ledger_job_ids_dir, kind="job_ids")
+        self._ingest_ledger_dir(self._settings.ledger_job_scrapes_dir, kind="job_scrapes")
+
+    def _ingest_ledger_dir(self, ledger_dir: Path, *, kind: str) -> None:
+        ingest.ingest_ledger_dir(
+            ledger_dir,
+            kind=kind,
+            ingest_file_fn=lambda path, kind: self._ingest_ledger_file(path, kind=kind),
+        )
+
+    def _ingest_ledger_file(self, path: Path, *, kind: str) -> None:
+        ingest.ingest_ledger_file(self._index, path, kind=kind)
+
+    def _ingest_job_ids_lines(self, lines: list[bytes], *, path: Path) -> None:
+        ingest.ingest_job_ids_lines(self._index, lines, path=path)
+
+    def _ingest_job_scrape_lines(self, lines: list[bytes], *, path: Path) -> None:
+        ingest.ingest_job_scrape_lines(self._index, lines, path=path)
+
     async def save_job_id(self, job: JobId) -> None:
         """Save a single job ID to storage."""
-        file_path = self._get_job_ids_file(job.source)
-
-        existing = await self._load_job_ids_from_file(file_path)
-
-        existing_ids = {j.job_id for j in existing}
-        if job.job_id in existing_ids:
-            logger.debug(f"Job ID {job.job_id} already exists, skipping")
-            return
-
-        existing.append(job)
-
-        await self._save_job_ids_to_file(file_path, existing)
-        logger.debug(f"Saved job ID: {job.job_id} (source: {job.source.value})")
+        await self.save_job_ids([job])
 
     async def save_job_ids(self, jobs: list[JobId]) -> int:
         """
@@ -70,47 +89,26 @@ class JobStorage:
         if not jobs:
             return 0
 
+        # De-duplicate within the input batch to avoid noisy ledgers and redundant DB writes.
         by_source: dict[JobIdSource, dict[str, JobId]] = {}
         for job in jobs:
             by_source.setdefault(job.source, {})
-            # De-duplicate within the input batch to avoid writing duplicates.
             by_source[job.source].setdefault(job.job_id, job)
 
-        saved_count = 0
+        deduped: list[JobId] = []
+        for source_jobs_by_id in by_source.values():
+            deduped.extend(source_jobs_by_id.values())
 
-        for source, source_jobs_by_id in by_source.items():
-            source_jobs = list(source_jobs_by_id.values())
-            file_path = self._get_job_ids_file(source)
-            existing = await self._load_job_ids_from_file(file_path)
-            existing_ids = {j.job_id for j in existing}
+        inserted = self._index.insert_job_ids(deduped)
+        if inserted:
+            try:
+                await self._ledger.append_job_ids(inserted)
+            except Exception:
+                # The DB is still correct; ledger write failures only impact cross-machine syncing.
+                logger.exception("Failed writing job id ledger")
+            logger.info("Saved %s new job IDs", len(inserted))
 
-            new_jobs = [j for j in source_jobs if j.job_id not in existing_ids]
-            if new_jobs:
-                existing.extend(new_jobs)
-                await self._save_job_ids_to_file(file_path, existing)
-                saved_count += len(new_jobs)
-                logger.info(f"Saved {len(new_jobs)} new job IDs (source: {source.value})")
-
-        return saved_count
-
-    async def _load_job_ids_from_file(self, file_path: Path) -> list[JobId]:
-        """Load job IDs from a JSON file."""
-        if not file_path.exists():
-            return []
-
-        try:
-            async with aiofiles.open(file_path, encoding="utf-8") as f:
-                content = await f.read()
-                data = json.loads(content)
-                return [JobId.model_validate(item) for item in data]
-        except (json.JSONDecodeError, ValueError) as e:
-            logger.error(f"Error loading job IDs from {file_path}: {e}")
-            return []
-
-    async def _save_job_ids_to_file(self, file_path: Path, jobs: list[JobId]) -> None:
-        """Save job IDs to a JSON file."""
-        data = [job.model_dump(mode="json") for job in jobs]
-        await _atomic_write_text(file_path, json.dumps(data, indent=2, ensure_ascii=False) + "\n")
+        return len(inserted)
 
     async def get_job_ids(
         self,
@@ -124,40 +122,34 @@ class JobStorage:
             source: Filter by source, or None for all sources
             unscraped_only: If True, only return job IDs not yet scraped
         """
-        if source:
-            jobs = await self._load_job_ids_from_file(self._get_job_ids_file(source))
-        else:
-            jobs = []
-            for src in JobIdSource:
-                jobs.extend(await self._load_job_ids_from_file(self._get_job_ids_file(src)))
+        jobs = self._index.list_job_ids(source=source, unscraped_only=unscraped_only)
+        if not unscraped_only:
+            return jobs
 
-        if unscraped_only:
-            jobs = [j for j in jobs if not j.scraped]
-
-        return jobs
+        # Self-heal: if job details exist (synced from another machine),
+        # mark as scraped and filter out.
+        remaining: list[JobId] = []
+        for job in jobs:
+            if self._get_job_detail_file(job.job_id).exists():
+                self._index.mark_job_scraped(job.job_id)
+                continue
+            remaining.append(job)
+        return remaining
 
     async def mark_job_scraped(self, job_id: str) -> None:
-        """Mark a job ID as scraped in all source files."""
-        for source in JobIdSource:
-            file_path = self._get_job_ids_file(source)
-            jobs = await self._load_job_ids_from_file(file_path)
-
-            modified = False
-            for job in jobs:
-                if job.job_id == job_id and not job.scraped:
-                    job.scraped = True
-                    modified = True
-
-            if modified:
-                await self._save_job_ids_to_file(file_path, jobs)
-                logger.debug(f"Marked job {job_id} as scraped in {source.value}")
+        """Mark a job ID as scraped in the index and emit a scrape ledger event."""
+        try:
+            await self._ledger.append_job_scrape(job_id)
+        except Exception:
+            logger.exception("Failed writing job scrape ledger")
+        self._index.mark_job_scraped(job_id)
 
     async def save_job_detail(self, detail: JobDetail) -> None:
         """Save job detail to storage."""
         file_path = self._get_job_detail_file(detail.job_id)
         data = detail.model_dump(mode="json")
 
-        await _atomic_write_text(file_path, json.dumps(data, indent=2, ensure_ascii=False) + "\n")
+        await atomic_write_text(file_path, json.dumps(data, indent=2, ensure_ascii=False) + "\n")
 
         logger.debug(f"Saved job detail: {detail.job_id}")
 
@@ -186,15 +178,17 @@ class JobStorage:
 
     async def get_stats(self) -> dict[str, int]:
         """Get storage statistics."""
-        search_ids = await self.get_job_ids(JobIdSource.SEARCH)
-        recommended_ids = await self.get_job_ids(JobIdSource.RECOMMENDED)
-        detail_count = sum(1 for _ in self.iter_job_details())
+        # Reconcile scraped status from job detail files (merge-friendly sync artifact).
+        detail_job_ids = [p.stem for p in self.iter_job_details()]
+        if detail_job_ids:
+            self._index.mark_jobs_scraped(detail_job_ids)
+        detail_count = len(detail_job_ids)
 
         return {
-            "search_job_ids": len(search_ids),
-            "recommended_job_ids": len(recommended_ids),
-            "unscraped_search": len([j for j in search_ids if not j.scraped]),
-            "unscraped_recommended": len([j for j in recommended_ids if not j.scraped]),
+            "search_job_ids": self._index.count_job_ids(source=JobIdSource.SEARCH),
+            "recommended_job_ids": self._index.count_job_ids(source=JobIdSource.RECOMMENDED),
+            "unscraped_search": self._index.count_unscraped(source=JobIdSource.SEARCH),
+            "unscraped_recommended": self._index.count_unscraped(source=JobIdSource.RECOMMENDED),
             "job_details": detail_count,
         }
 

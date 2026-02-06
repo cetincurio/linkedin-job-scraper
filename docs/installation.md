@@ -42,6 +42,10 @@ uv sync
 
 # Install Playwright browsers
 uv run playwright install chromium
+
+# If you activated a venv, prefer:
+# uv sync --active
+# uv run --active playwright install chromium
 ```
 
 ### Using pip
@@ -103,7 +107,7 @@ If Playwright browser installation fails:
 
 ```bash
 # Install with system dependencies
-playwright install chromium --with-deps
+uv run playwright install chromium --with-deps
 ```
 
 ### Permission Issues on Linux

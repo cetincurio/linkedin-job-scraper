@@ -1,0 +1,73 @@
+name: CI - Lint
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main, develop]
+    paths:
+      - .github/workflows/ci-lint.yml
+      - .github/workflows/ci-*.yml
+      - pyproject.toml
+      - uv.lock
+      - src/**
+      - tests/**
+      - scripts/**
+  pull_request:
+    branches: [main]
+    paths:
+      - .github/workflows/ci-lint.yml
+      - .github/workflows/ci-*.yml
+      - pyproject.toml
+      - uv.lock
+      - src/**
+      - tests/**
+      - scripts/**
+  merge_group:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-lint-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  PYTHON_VERSION: "3.14"
+  UV_VERSION: "0.10.0"
+
+jobs:
+  lint:
+    name: Lint, Format, Type Check
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@7eb50e6e20e1e2009087999ba91242e80253875f # v7
+        with:
+          version: ${{ env.UV_VERSION }}
+          enable-cache: true
+          cache-python: true
+
+      - name: Set up Python
+        run: uv python install ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies
+        run: uv sync --locked --no-default-groups --extra dev --extra types
+
+      - name: Run Ruff linter
+        run: uv run --no-sync --locked --no-default-groups ruff check src/ tests/
+
+      - name: Run Ruff formatter check
+        run: uv run --no-sync --locked --no-default-groups ruff format --check src/ tests/
+
+      - name: Run ty type checker
+        run: uv run --no-sync --locked --no-default-groups ty check src/
+
+      - name: Run prek (all files)
+        uses: j178/prek-action@7df3c11a9cc19225ab75c6cedc75d981a2567efa # v1
+
+      - name: Prune uv cache (optional)
+        if: vars.UV_CACHE_PRUNE == 'true'
+        run: uv cache prune

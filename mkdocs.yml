@@ -1,29 +1,37 @@
 # MkDocs configuration
 site_name: LinkedIn Job Scraper
 site_description: Educational LinkedIn public job ads scraper with stealth capabilities
-site_url: https://cetincurio.github.io/linkedin-job-scraper
-repo_url: https://github.com/cetincurio/linkedin-job-scraper
+site_url: https://cetincurio.github.io/linkedin-job-scraper/
+repo_url: https://cetincurio.github.io/linkedin-job-scraper/
 repo_name: cetincurio/linkedin-job-scraper
 edit_uri: edit/main/docs/
 
 theme:
   name: material
+  variant: classic
   custom_dir: docs/overrides # Optional: custom icons/layout
   icon:
     logo: material/language-python
     favicon: material/language-python
   palette:
-    - scheme: default
-      primary: peach
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: deep purple
+      accent: deep purple
       toggle:
         icon: material/brightness-7
         name: Switch to dark mode
-    - scheme: slate
-      primary: mauve
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: deep purple # Approximates mocha's mauve
+      accent: deep purple
       toggle:
         icon: material/brightness-4
         name: Switch to light mode
-      media: "(prefers-color-scheme: dark)"
+  font:
+    text: Fira Sans
+    code: Fira Code
+
   features:
     - content.code.copy
     - content.code.annotate
@@ -83,7 +91,10 @@ markdown_extensions:
       anchor_linenums: true
   - pymdownx.inlinehilite
   - pymdownx.keys
-  - pymdownx.superfences
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
   - pymdownx.snippets:
       base_path: snippets
   - pymdownx.tabbed:
@@ -106,8 +117,8 @@ nav:
       - CI/CD 2026: dev/ci-cd.md
 
 extra_css:
-  - stylesheets/catppuccin.css
-  - stylesheets/extra.css # Optional: your tweaks
+  - overrides/css/fonts.css
+  - overrides/css/catppuccin-mocha.css
 
 extra:
   version:

@@ -24,6 +24,7 @@ concurrency:
 
 env:
   PYTHON_VERSION: "3.14"
+  UV_VERSION: "0.10"
 
 jobs:
   build:
@@ -36,20 +37,9 @@ jobs:
       - name: Install uv
         uses: astral-sh/setup-uv@7eb50e6e20e1e2009087999ba91242e80253875f # v7
         with:
-          version: "latest"
-
-      - name: Locate uv cache
-        id: uv-cache
-        run: echo "dir=$(uv cache dir)" >> "$GITHUB_OUTPUT"
-
-      - name: Cache uv
-        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
-        with:
-          path: ${{ steps.uv-cache.outputs.dir }}
-          key: uv-${{ runner.os }}-${{ env.PYTHON_VERSION }}-${{ hashFiles('uv.lock') }}
-          restore-keys: |
-            uv-${{ runner.os }}-${{ env.PYTHON_VERSION }}-
-            uv-${{ runner.os }}-
+          version: ${{ env.UV_VERSION }}
+          enable-cache: true
+          cache-python: true
 
       - name: Set up Python
         run: uv python install ${{ env.PYTHON_VERSION }}
@@ -62,6 +52,10 @@ jobs:
         with:
           name: dist
           path: dist/*
+
+      - name: Prune uv cache (optional)
+        if: vars.UV_CACHE_PRUNE == 'true'
+        run: uv cache prune
 
 
   # -------------------------------------------------------------------------
@@ -90,7 +84,7 @@ jobs:
   #     - name: Publish to TestPyPI (Trusted Publishing)
   #       uses: pypa/gh-action-pypi-publish@release/v1
   #       with:
-  #         repository-url: https://test.pypi.org/legacy/
+  #         repository-url: https://test.pypi.org/
   #         packages-dir: dist
 
   # publish-pypi:
@@ -162,5 +156,5 @@ jobs:
   #     - name: Publish to TestPyPI (Trusted Publishing)
   #       uses: pypa/gh-action-pypi-publish@release/v1
   #       with:
-  #         repository-url: https://test.pypi.org/legacy/
+  #         repository-url: https://test.pypi.org/
   #         packages-dir: dist

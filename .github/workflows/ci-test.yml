@@ -1,0 +1,81 @@
+name: CI - Tests
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main, develop]
+    paths:
+      - .github/workflows/ci-test.yml
+      - .github/workflows/ci-*.yml
+      - pyproject.toml
+      - uv.lock
+      - src/**
+      - tests/**
+      - scripts/**
+  pull_request:
+    branches: [main]
+    paths:
+      - .github/workflows/ci-test.yml
+      - .github/workflows/ci-*.yml
+      - pyproject.toml
+      - uv.lock
+      - src/**
+      - tests/**
+      - scripts/**
+  merge_group:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-tests-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  UV_VERSION: "0.10.0"
+
+jobs:
+  test:
+    name: Tests (Python ${{ matrix.python-version }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.13", "3.14"]
+
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@7eb50e6e20e1e2009087999ba91242e80253875f # v7
+        with:
+          version: ${{ env.UV_VERSION }}
+          enable-cache: true
+          cache-python: true
+
+      - name: Set up Python ${{ matrix.python-version }}
+        run: uv python install ${{ matrix.python-version }}
+
+      - name: Install dependencies
+        run: uv sync --locked --no-default-groups --extra test
+
+      - name: Run tests with coverage
+        run: |
+          uv run --no-sync --locked --no-default-groups pytest tests/ \
+            --cov=src/linkedin_scraper \
+            --cov-report=xml \
+            --cov-report=term-missing \
+            -m "not integration"
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@b9fd7d16f6d7d1b5d2bec1a2887e65ceed900238 # v4
+        with:
+          files: ./coverage.xml
+          fail_ci_if_error: false
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+
+      - name: Prune uv cache (optional)
+        if: vars.UV_CACHE_PRUNE == 'true'
+        run: uv cache prune

@@ -1,0 +1,70 @@
+name: CI - Integration
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/ci-integration.yml
+      - .github/workflows/ci-*.yml
+      - pyproject.toml
+      - uv.lock
+      - src/**
+      - tests/**
+      - scripts/**
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-integration-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  PYTHON_VERSION: "3.14"
+  UV_VERSION: "0.10"
+
+jobs:
+  integration:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@7eb50e6e20e1e2009087999ba91242e80253875f # v7
+        with:
+          version: ${{ env.UV_VERSION }}
+          enable-cache: true
+          cache-python: true
+
+      - name: Set up Python
+        run: uv python install ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies
+        run: uv sync --locked --no-default-groups --extra test
+
+      - name: Install Playwright browsers
+        run: uv run --no-sync --locked --no-default-groups playwright install chromium --with-deps
+
+      - name: Run integration tests
+        run: |
+          set +e
+          uv run --no-sync --locked --no-default-groups pytest tests/ \
+            -m "integration" \
+            --no-cov \
+            --timeout=120
+          status=$?
+          # pytest exits with code 5 when no tests were collected/selected.
+          # For this repo, integration tests are optional; treat "no tests" as success.
+          if [ "$status" -eq 5 ]; then
+            exit 0
+          fi
+          exit "$status"
+        env:
+          LINKEDIN_SCRAPER_HEADLESS: "true"
+
+      - name: Prune uv cache (optional)
+        if: vars.UV_CACHE_PRUNE == 'true'
+        run: uv cache prune

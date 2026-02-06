@@ -3,9 +3,18 @@
 
 .PHONY: \
 	help install dev \
+	playwright-install playwright-install-deps \
+	prek \
 	test test-cov lint format type-check check \
-	docs docs-serve \
+	docs docs-serve docs-zensical docs-serve-zensical \
 	clean build publish release
+
+UV_RUN_ACTIVE := uv run
+UV_SYNC_ACTIVE := uv sync
+ifdef VIRTUAL_ENV
+UV_RUN_ACTIVE := uv run --active
+UV_SYNC_ACTIVE := uv sync --active
+endif
 
 # Default target
 help:
@@ -13,11 +22,15 @@ help:
 	@echo ""
 	@echo "  make install     Install dependencies"
 	@echo "  make dev         Install with dev dependencies"
+	@echo "  make playwright-install       Install Playwright Chromium"
+	@echo "  make playwright-install-deps  Install Chromium with system deps"
+	@echo "  make prek        Run prek hooks on all files"
 	@echo "  make test        Run tests"
 	@echo "  make lint        Run linter"
 	@echo "  make format      Format code"
 	@echo "  make type-check  Run type checker"
 	@echo "  make docs        Build documentation"
+	@echo "  make docs-zensical  Build documentation with Zensical"
 	@echo "  make clean       Clean build artifacts"
 	@echo "  make build       Build package"
 	@echo "  make release     Bump version + tag (VERSION=0.1.1)"
@@ -25,45 +38,65 @@ help:
 
 # Install production dependencies
 install:
-	uv sync
+	$(UV_SYNC_ACTIVE)
 
 # Install with dev dependencies
 dev:
-	uv sync --extra dev
-	uv run prek install
-	uv run playwright install chromium
+	$(UV_SYNC_ACTIVE) --extra dev
+	$(UV_RUN_ACTIVE) prek install
+	$(UV_RUN_ACTIVE) playwright install chromium
+
+# Install Playwright browser only
+playwright-install:
+	$(UV_RUN_ACTIVE) playwright install chromium
+
+# Install Playwright browser with system deps (Linux CI or container)
+playwright-install-deps:
+	$(UV_RUN_ACTIVE) playwright install chromium --with-deps
+
+# Run prek on all files
+prek:
+	$(UV_RUN_ACTIVE) prek run --all-files
 
 # Run tests
 test:
-	uv run pytest tests/ -v
+	$(UV_RUN_ACTIVE) pytest tests/ -v
 
 # Run tests with coverage
 test-cov:
-	uv run pytest tests/ --cov=src/linkedin_scraper --cov-report=html --cov-report=term
+	$(UV_RUN_ACTIVE) pytest tests/ --cov=src/linkedin_scraper --cov-report=html --cov-report=term
 
 # Run linter
 lint:
-	uv run ruff check src/ tests/
+	$(UV_RUN_ACTIVE) ruff check src/ tests/
 
 # Format code
 format:
-	uv run ruff format src/ tests/
-	uv run ruff check --fix src/ tests/
+	$(UV_RUN_ACTIVE) ruff format src/ tests/
+	$(UV_RUN_ACTIVE) ruff check --fix src/ tests/
 
 # Run type checker
 type-check:
-	uv run ty check src/
+	$(UV_RUN_ACTIVE) ty check src/
 
 # Run all checks (lint + type-check + test)
 check: lint type-check test
 
 # Build documentation
 docs:
-	uv run mkdocs build
+	$(UV_RUN_ACTIVE) mkdocs build
 
 # Serve documentation locally
 docs-serve:
-	uv run mkdocs serve
+	$(UV_RUN_ACTIVE) mkdocs serve
+
+# Build documentation with Zensical
+docs-zensical:
+	$(UV_RUN_ACTIVE) zensical build
+
+# Serve documentation with Zensical
+docs-serve-zensical:
+	$(UV_RUN_ACTIVE) zensical serve
 
 # Clean build artifacts
 clean:
@@ -94,7 +127,7 @@ release:
 		echo "$$bad"; \
 		exit 1; \
 	fi
-	@uv run python - <<'PY'\nimport re\nfrom pathlib import Path\n\npath = Path(\"pyproject.toml\")\ntext = path.read_text(encoding=\"utf-8\")\nnew_version = \"$(VERSION)\"\npattern = r'^(version\\s*=\\s*\")([^\"]+)(\"\\s*)$'\nrepl = r\"\\\\1\" + new_version + r\"\\\\3\"\nnew_text, count = re.subn(pattern, repl, text, flags=re.MULTILINE)\nif count != 1:\n    raise SystemExit(\"Failed to update version in pyproject.toml\")\npath.write_text(new_text, encoding=\"utf-8\")\nprint(f\"Updated pyproject.toml version to {new_version}\")\nPY
+	@$(UV_RUN_ACTIVE) python - <<'PY'\nimport re\nfrom pathlib import Path\n\npath = Path(\"pyproject.toml\")\ntext = path.read_text(encoding=\"utf-8\")\nnew_version = \"$(VERSION)\"\npattern = r'^(version\\s*=\\s*\")([^\"]+)(\"\\s*)$'\nrepl = r\"\\\\1\" + new_version + r\"\\\\3\"\nnew_text, count = re.subn(pattern, repl, text, flags=re.MULTILINE)\nif count != 1:\n    raise SystemExit(\"Failed to update version in pyproject.toml\")\npath.write_text(new_text, encoding=\"utf-8\")\nprint(f\"Updated pyproject.toml version to {new_version}\")\nPY
 	@git add pyproject.toml CHANGELOG.md
 	@if git diff --cached --quiet; then echo "No changes to commit."; else git commit -m "chore(release): v$(VERSION)"; fi
 	@git tag v$(VERSION)

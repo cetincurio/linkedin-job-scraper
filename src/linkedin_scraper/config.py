@@ -1,6 +1,9 @@
 """Configuration management using Pydantic settings."""
 
 import functools
+import os
+import socket
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Literal
 
@@ -9,6 +12,21 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 __all__ = ["Settings", "get_settings"]
+
+
+def _default_run_id() -> str:
+    """Generate a unique run id used for ledger file names.
+
+    Keep it filesystem-safe and reasonably short while still being unique across:
+    - hosts
+    - processes
+    - time
+    """
+    ts = datetime.now(tz=UTC).strftime("%Y%m%dT%H%M%SZ")
+    host = socket.gethostname().split(".")[0] or "host"
+    pid = os.getpid()
+    # Timestamp + host + pid is typically enough for uniqueness in this project.
+    return f"{ts}_{host}_{pid}"
 
 
 class Settings(BaseSettings):
@@ -54,6 +72,10 @@ class Settings(BaseSettings):
     # Storage paths
     data_dir: Path = Field(default=Path("data"), description="Data storage directory")
     log_dir: Path = Field(default=Path("logs"), description="Log directory")
+    run_id: str = Field(
+        default_factory=_default_run_id,
+        description="Unique id for this run (used to name ledger files)",
+    )
 
     # Rate limiting
     min_request_interval_sec: float = Field(
@@ -73,6 +95,29 @@ class Settings(BaseSettings):
         return self.data_dir / "job_ids"
 
     @property
+    def ledger_dir(self) -> Path:
+        """Directory for append-only ledgers that can be synced across machines."""
+        return self.data_dir / "ledger"
+
+    @property
+    def ledger_job_ids_dir(self) -> Path:
+        return self.ledger_dir / "job_ids"
+
+    @property
+    def ledger_job_scrapes_dir(self) -> Path:
+        return self.ledger_dir / "job_scrapes"
+
+    @property
+    def index_dir(self) -> Path:
+        """Directory for local-only indexes derived from ledgers."""
+        return self.data_dir / "index"
+
+    @property
+    def index_db_path(self) -> Path:
+        """SQLite index database path (local-only, derived)."""
+        return self.index_dir / "job_index.sqlite3"
+
+    @property
     def job_details_dir(self) -> Path:
         """Directory for storing job details."""
         return self.data_dir / "job_details"
@@ -87,6 +132,10 @@ class Settings(BaseSettings):
         for directory in [
             self.data_dir,
             self.job_ids_dir,
+            self.ledger_dir,
+            self.ledger_job_ids_dir,
+            self.ledger_job_scrapes_dir,
+            self.index_dir,
             self.job_details_dir,
             self.screenshots_dir,
             self.log_dir,
