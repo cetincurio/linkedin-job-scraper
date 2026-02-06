@@ -319,7 +319,7 @@ playwright install chromium
 
 ## CI/CD Summary
 
-- Primary CI runs on PRs and pushes with fast lint/type checks, pre-commit, test matrix, build artifacts, wheel install tests, docs build, and optional integration tests.
+- Primary CI runs on PRs and pushes with fast lint/type checks, prek, test matrix, build artifacts, wheel install tests, docs build, and optional integration tests.
 - Docs deploy automatically from `main` via GitHub Pages.
 - Release workflow builds sdist + wheel on tag pushes (`v*`) or manual runs.
 - TestPyPI/PyPI publishing is manual via workflow inputs.
@@ -346,8 +346,8 @@ This project uses `uv_build` (the uv build backend) for fast, modern packaging. 
 # Install dev dependencies
 uv sync --extra dev
 
-# Install pre-commit hooks
-uv run pre-commit install
+# Install prek hooks
+uv run prek install
 
 # Run all checks
 make check
@@ -355,7 +355,7 @@ make check
 # Or individually:
 uv run ruff check src/ tests/    # Lint
 uv run ruff format src/ tests/   # Format
-uv run pyright src/              # Type check
+uv run ty check src/             # Type check
 uv run pytest                    # Test
 uv run pytest --cov              # Test with coverage
 ```
@@ -368,7 +368,7 @@ make dev         # Setup dev environment
 make test        # Run tests
 make lint        # Run linter
 make format      # Format code
-make type-check  # Run pyright
+make type-check  # Run ty
 make docs        # Build documentation
 make build       # Build package
 make release     # Bump version + tag (VERSION=0.1.1)

@@ -21,8 +21,8 @@ cd linkedin-job-scraper
 # Install with dev dependencies
 uv sync --extra dev
 
-# Install pre-commit hooks
-uv run pre-commit install
+# Install prek hooks
+uv run prek install
 
 # Run tests
 uv run pytest

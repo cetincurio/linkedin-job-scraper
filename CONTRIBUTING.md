@@ -76,8 +76,8 @@ uv sync --extra dev
 # Install Playwright browsers
 uv run playwright install chromium
 
-# Install pre-commit hooks
-uv run pre-commit install
+# Install prek hooks
+uv run prek install
 ```
 
 ### Setup with pip
@@ -87,7 +87,7 @@ python -m venv .venv
 source .venv/bin/activate  # Linux/macOS
 pip install -e ".[dev]"
 playwright install chromium
-pre-commit install
+prek install
 ```
 
 ## Making Changes
@@ -143,7 +143,7 @@ uv run ruff format src/ tests/
 uv run ruff check --fix src/ tests/
 
 # Type checking
-uv run pyright src/
+uv run ty check src/
 ```
 
 ### Guidelines
@@ -256,7 +256,7 @@ class TestJobId:
    ```bash
    uv run ruff format src/ tests/
    uv run ruff check src/ tests/
-   uv run pyright src/
+   uv run ty check src/
    uv run pytest
    ```
 

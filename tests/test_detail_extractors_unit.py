@@ -167,6 +167,24 @@ async def test_extract_job_criteria_parses_common_fields() -> None:
 
 
 @pytest.mark.asyncio
+async def test_extract_job_criteria_ignores_unrecognized_items() -> None:
+    page = cast(
+        Page,
+        _FakePage(
+            expand_visible=False,
+            criteria_items=[
+                "Something else entirely",
+            ],
+        ),
+    )
+    criteria = await extract_job_criteria(page)
+    assert criteria["employment_type"] is None
+    assert criteria["seniority_level"] is None
+    assert criteria["industry"] is None
+    assert criteria["job_function"] is None
+
+
+@pytest.mark.asyncio
 async def test_extract_description_expands_and_returns_long_text() -> None:
     long_desc = "x" * 80
     scraper = _FakeScraper(text_by_selector={".jobs-description__content": long_desc})
@@ -177,6 +195,52 @@ async def test_extract_description_expands_and_returns_long_text() -> None:
     desc = await extract_description(cast(BaseScraper, scraper), page, human)
     assert desc == long_desc
     assert human_fake.clicked == 1
+
+
+@pytest.mark.asyncio
+async def test_extract_description_skips_when_expand_button_invisible_or_missing() -> None:
+    long_desc = "x" * 80
+    scraper = _FakeScraper(text_by_selector={".jobs-description__content": long_desc})
+
+    class _InvisibleButton(_FakeButtonLocator):
+        async def count(self) -> int:
+            return 1
+
+        async def is_visible(self) -> bool:
+            return False
+
+    class _NoButton(_FakeButtonLocator):
+        async def count(self) -> int:
+            return 0
+
+        async def is_visible(self) -> bool:
+            raise AssertionError("should not be called")
+
+    class _Page1(_FakePage):
+        def locator(self, selector: str) -> Any:
+            if selector.startswith("button") or "show-more" in selector:
+                return _InvisibleButton(False)
+            return super().locator(selector)
+
+    class _Page2(_FakePage):
+        def locator(self, selector: str) -> Any:
+            if selector.startswith("button") or "show-more" in selector:
+                return _NoButton(False)
+            return super().locator(selector)
+
+    human_fake = _FakeHuman()
+    desc1 = await extract_description(
+        cast(BaseScraper, scraper),
+        cast(Page, _Page1(expand_visible=False)),
+        cast(HumanBehavior, human_fake),
+    )
+    desc2 = await extract_description(
+        cast(BaseScraper, scraper),
+        cast(Page, _Page2(expand_visible=False)),
+        cast(HumanBehavior, human_fake),
+    )
+    assert desc1 == long_desc
+    assert desc2 == long_desc
 
 
 @pytest.mark.asyncio
@@ -206,3 +270,77 @@ async def test_extract_raw_sections_truncates_long_text() -> None:
     )
     assert sections["top_card"] == "a" * 1000
     assert sections["description"] == "b" * 10
+
+
+@pytest.mark.asyncio
+async def test_wait_for_job_content_false_when_no_selector_present() -> None:
+    scraper = _FakeScraper(selectors_present=set())
+    ok = await wait_for_job_content(
+        cast(BaseScraper, scraper), cast(Page, _FakePage(expand_visible=False))
+    )
+    assert ok is False
+
+
+@pytest.mark.asyncio
+async def test_extractors_return_none_when_no_text_found() -> None:
+    scraper = _FakeScraper()
+    page = cast(Page, _FakePage(expand_visible=False))
+    typed_scraper = cast(BaseScraper, scraper)
+
+    assert await extract_title(typed_scraper, page) is None
+    assert await extract_company(typed_scraper, page) is None
+    assert await extract_location(typed_scraper, page) is None
+    assert await extract_workplace_type(typed_scraper, page) is None
+    assert await extract_posted_date(typed_scraper, page) is None
+    assert await extract_applicant_count(typed_scraper, page) is None
+    assert await extract_salary(typed_scraper, page) is None
+
+
+@pytest.mark.asyncio
+async def test_extract_job_criteria_ignores_locator_errors() -> None:
+    class _RaisingPage:
+        def locator(self, _selector: str) -> Any:
+            raise RuntimeError("boom")
+
+    criteria = await extract_job_criteria(cast(Page, _RaisingPage()))
+    assert criteria == {
+        "employment_type": None,
+        "seniority_level": None,
+        "industry": None,
+        "job_function": None,
+    }
+
+
+@pytest.mark.asyncio
+async def test_extract_description_returns_none_for_short_text_and_handles_expand_errors() -> None:
+    scraper = _FakeScraper(text_by_selector={".jobs-description__content": "too short"})
+
+    class _PageWithExplodingExpand(_FakePage):
+        def locator(self, selector: str) -> Any:
+            if selector.startswith("button") or "show-more" in selector:
+                raise RuntimeError("nope")
+            return super().locator(selector)
+
+    page = cast(Page, _PageWithExplodingExpand(expand_visible=False))
+    human = cast(HumanBehavior, _FakeHuman())
+
+    desc = await extract_description(cast(BaseScraper, scraper), page, human)
+    assert desc is None
+
+
+@pytest.mark.asyncio
+async def test_extract_salary_requires_currency_symbol() -> None:
+    scraper = _FakeScraper(
+        text_by_selector={".job-details-jobs-unified-top-card__job-insight--highlight": "100k"}
+    )
+    page = cast(Page, _FakePage(expand_visible=False))
+    out = await extract_salary(cast(BaseScraper, scraper), page)
+    assert out is None
+
+
+@pytest.mark.asyncio
+async def test_extract_raw_sections_omits_empty_sections() -> None:
+    scraper = _FakeScraper(text_by_selector={".jobs-unified-top-card": ""})
+    page = cast(Page, _FakePage(expand_visible=False))
+    sections = await extract_raw_sections(cast(BaseScraper, scraper), page)
+    assert sections == {}

@@ -8,7 +8,7 @@
   - [Release Checklist (Small And Practical)](#release-checklist-small-and-practical)
   - [Triggers](#triggers)
   - [Jobs](#jobs)
-    - [Lint, Format, Type Check, Pre-commit](#lint-format-type-check-pre-commit)
+    - [Lint, Format, Type Check, Prek](#lint-format-type-check-prek)
     - [Test (Matrix)](#test-matrix)
     - [Build (sdist + wheel)](#build-sdist-wheel)
     - [Test Installed Wheel](#test-installed-wheel)
@@ -36,7 +36,7 @@ This repo uses a modern, minimal, and fast GitHub Actions pipeline designed for 
 
 ```mermaid
 flowchart LR
-  A[push / PR / merge queue / manual] --> B[Lint, Format, Type Check, Pre-commit]
+  A[push / PR / merge queue / manual] --> B[Lint, Format, Type Check, Prek]
   A --> C[Test Matrix: 3.13, 3.14]
   B --> D[Build sdist + wheel]
   C --> D
@@ -60,7 +60,7 @@ Publishing to PyPI/TestPyPI is manual and controlled by workflow inputs.
 flowchart LR
   R[tag push v* / manual] --> B[Build sdist + wheel]
   B --> A[Upload dist artifacts]
-  A --> P{{Manual publish}}
+  A --> P{Manual publish}
   P --> P1[PyPI]
   P --> P2[TestPyPI]
 ```
@@ -84,11 +84,11 @@ flowchart LR
 
 ## Jobs
 
-### Lint, Format, Type Check, Pre-commit
+### Lint, Format, Type Check, Prek
 
 - Installs `uv`, caches the global `uv` cache.
 - Installs dev + types extras.
-- Runs `ruff check`, `ruff format --check`, `pyright`, and `pre-commit`.
+- Runs `ruff check`, `ruff format --check`, `ty`, and `prek`.
 
 ### Test (Matrix)
 

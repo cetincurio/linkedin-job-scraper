@@ -4,7 +4,7 @@
 
 - [Project Refactoring Guide (2026 Best Practices)](#project-refactoring-guide-2026-best-practices)
   - [Summary of Changes](#summary-of-changes)
-  - [1. Type Checking with Pyright](#1-type-checking-with-pyright)
+  - [1. Type Checking with Ty](#1-type-checking-with-ty)
     - [Problem](#problem)
     - [Solution](#solution)
     - [Commands](#commands)
@@ -20,7 +20,7 @@
     - [Problem](#problem)
     - [Solution](#solution)
     - [Commands](#commands)
-  - [6. Pre-commit Simplification](#6-pre-commit-simplification)
+  - [6. Prek Simplification](#6-prek-simplification)
     - [Problem](#problem)
     - [Solution](#solution)
     - [Commands](#commands)
@@ -52,26 +52,26 @@ This document captures the complete refactoring process applied to this project,
 
 | Area | What Changed |
 |------|-------------|
-| Type Checking | Fixed all pyright errors, enriched `pyrightconfig.json` |
+| Type Checking | Fixed all ty errors, enriched `tyconfig.json` |
 | Git | Initialized repo, reorganized `.gitignore` |
 | Dependencies | Updated to latest versions, verified compatibility |
 | Build Config | Reorganized `pyproject.toml` with clear sections |
 | Testing | Fixed `pytest-asyncio` config for v1.x |
-| Pre-commit | Simplified to use ruff as single tool |
+| Prek | Simplified to use ruff as single tool |
 | Docs | Custom fonts (Inter + JetBrains Mono), strict build |
 | Multi-account Git | Per-repo SSH config for specific GitHub account |
 
 ---
 
-## 1. Type Checking with Pyright
+## 1. Type Checking with Ty
 
 ### Problem
 
-Pyright was failing due to missing/invalid config.
+Ty was failing due to missing/invalid config.
 
 ### Solution
 
-Created a proper `pyrightconfig.json` with comprehensive excludes:
+Created a proper `tyconfig.json` with comprehensive excludes:
 
 ```json
 {
@@ -100,7 +100,7 @@ Created a proper `pyrightconfig.json` with comprehensive excludes:
 ### Commands
 
 ```bash
-uv run pyright src/
+uv run ty check src/
 ```
 
 ---
@@ -241,7 +241,7 @@ uv run pytest -n auto --tb=short
 
 ---
 
-## 6. Pre-commit Simplification
+## 6. Prek Simplification
 
 ### Problem
 
@@ -289,8 +289,8 @@ repos:
 ### Commands
 
 ```bash
-pre-commit clean && pre-commit install
-pre-commit run --all-files
+prek clean && prek install
+prek run --all-files
 ```
 
 ---
@@ -381,11 +381,11 @@ git push -u origin main
 ```bash
 # Full quality check
 ruff clean && ruff format && ruff check --fix
-uv run pyright
+uv run ty check src/
 uv sync --extra test && uv run pytest -n auto
 
-# Pre-commit
-pre-commit run --all-files
+# Prek
+prek run --all-files
 
 # Documentation
 uv run mkdocs build --strict
@@ -402,7 +402,7 @@ uv run --with deptry deptry src/
 | File | Changes |
 |------|---------|
 | `pyproject.toml` | Reorganized, updated deps, fixed pytest config |
-| `pyrightconfig.json` | Created with proper excludes |
+| `tyconfig.json` | Created with proper excludes |
 | `.gitignore` | Reorganized with clear sections |
 | `.pre-commit-config.yaml` | Simplified to ruff-only |
 | `mkdocs.yml` | Added custom fonts |

@@ -8,38 +8,49 @@ edit_uri: edit/main/docs/
 
 theme:
   name: material
-  font:
-    text: Fira Sans              # Modern, highly readable sans-serif
-#    text: Inter              # Modern, highly readable sans-serif
-#    code: JetBrains Mono     # Designed for code, with ligatures
-    code: FiraCode Nerd     # Designed for code, with ligatures
-
+  custom_dir: docs/overrides # Optional: custom icons/layout
+  icon:
+    logo: material/language-python
+    favicon: material/language-python
   palette:
     - scheme: default
-      primary: blue
-      accent: indigo
+      primary: peach
       toggle:
         icon: material/brightness-7
         name: Switch to dark mode
     - scheme: slate
-      primary: blue
-      accent: indigo
+      primary: mauve
       toggle:
         icon: material/brightness-4
         name: Switch to light mode
+      media: "(prefers-color-scheme: dark)"
   features:
-    - navigation.instant
-    - navigation.tracking
-    - navigation.sections
-    - navigation.expand
-    - navigation.top
-    - search.suggest
-    - search.highlight
     - content.code.copy
     - content.code.annotate
+    - content.tabs.link
+    - navigation.expand
+    - navigation.indexes
+    - navigation.instant
+    - navigation.sections
+    - navigation.top
+    - navigation.tracking
+    - search.highlight
+    - search.share
+    - search.suggest
 
 plugins:
-  - search
+  - search:
+      lang: en
+  - gen-files:
+      scripts:
+        - docs/gen_api.py # Auto-generate API pages
+  - mike:
+      version_selector: true
+  - minify:
+      minify_html: true
+      minify_js: true
+      minify_css: true
+  - macros
   - mkdocstrings:
       handlers:
         python:
@@ -49,15 +60,36 @@ plugins:
             heading_level: 2
 
 markdown_extensions:
+  - abbr
+  - admonition
+  - attr_list
+  - def_list
+  - footnotes
+  - meta
+  - md_in_html
+  - toc:
+      permalink: true
+  - tables
+  - pymdownx.arithmatex:
+      generic: true
+  - pymdownx.betterem:
+      smart_enable: all
+  - pymdownx.caret
+  - pymdownx.mark
+  - pymdownx.tilde
+  - pymdownx.critic
+  - pymdownx.details
   - pymdownx.highlight:
       anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.keys
   - pymdownx.superfences
+  - pymdownx.snippets:
+      base_path: snippets
   - pymdownx.tabbed:
       alternate_style: true
-  - admonition
-  - pymdownx.details
-  - attr_list
-  - md_in_html
+  - pymdownx.tasklist:
+      custom_checkbox: true
 
 nav:
   - Home: index.md
@@ -72,3 +104,14 @@ nav:
   - Development:
       - Refactoring 2026: dev/refactoring-2026.md
       - CI/CD 2026: dev/ci-cd.md
+
+extra_css:
+  - stylesheets/catppuccin.css
+  - stylesheets/extra.css # Optional: your tweaks
+
+extra:
+  version:
+    provider: mike
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/cetincurio/linkedin-job-scraper

@@ -30,7 +30,7 @@ install:
 # Install with dev dependencies
 dev:
 	uv sync --extra dev
-	uv run pre-commit install
+	uv run prek install
 	uv run playwright install chromium
 
 # Run tests
@@ -52,7 +52,7 @@ format:
 
 # Run type checker
 type-check:
-	uv run pyright src/
+	uv run ty check src/
 
 # Run all checks (lint + type-check + test)
 check: lint type-check test

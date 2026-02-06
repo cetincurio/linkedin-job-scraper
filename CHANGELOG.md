@@ -34,7 +34,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Pydantic models for type-safe data handling
 - Async storage with JSON persistence
 - Comprehensive logging with Rich
-- Pre-commit hooks for code quality
+- Prek hooks for code quality
 - GitHub Actions CI/CD workflows
 - Full test suite with pytest
 - Switched build backend to `uv_build` with sdist source includes for tests and changelog

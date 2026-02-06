@@ -73,9 +73,10 @@ class BaseScraper(ABC):
             # Compute the minimum additional time needed to bring the average back under limit.
             required_elapsed_s = (self._request_count * 3600.0) / float(max_per_hour)
             wait_s = max(0.0, required_elapsed_s - elapsed_s)
-            if wait_s > 0:
-                logger.warning(f"Rate limit approaching, waiting {wait_s:.1f}s")
-                await asyncio.sleep(wait_s)
+            # `wait_s` should be positive when `rate > max_per_hour`,
+            # but keep it safe and branch-free.
+            logger.warning(f"Rate limit approaching, waiting {wait_s:.1f}s")
+            await asyncio.sleep(wait_s)
 
         self._request_count += 1
         self._last_request_time_mono = time.monotonic()
@@ -204,7 +205,7 @@ class BaseScraper(ABC):
         job_ids: set[str] = set()
         for pattern in patterns:
             matches = re.findall(pattern, html)
-        job_ids.update(matches)
+            job_ids.update(matches)
 
         # Stable output is important for reproducible runs and testability.
         # NOTE: `sorted(..., key=int)` causes type checkers to infer an overly-broad

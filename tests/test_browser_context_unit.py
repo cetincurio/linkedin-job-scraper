@@ -3,9 +3,10 @@
 from __future__ import annotations
 
 from contextlib import asynccontextmanager
-from typing import Any
+from typing import Any, cast
 
 import pytest
+from playwright.async_api import Browser, BrowserContext
 
 from linkedin_scraper.browser.context import BrowserManager
 from linkedin_scraper.config import Settings
@@ -79,14 +80,23 @@ def test_get_launch_options_chromium_sandbox_disabled(tmp_path) -> None:
     assert "--disable-setuid-sandbox" in opts["args"]
 
 
+def test_get_launch_options_non_chromium_has_no_args(tmp_path) -> None:
+    settings = _settings(tmp_path)
+    settings.browser_type = "firefox"
+    manager = BrowserManager(settings)
+
+    opts = manager._get_launch_options()
+    assert opts["args"] == []
+
+
 @pytest.mark.asyncio
 async def test_cleanup_closes_context_and_browser(tmp_path) -> None:
     manager = BrowserManager(_settings(tmp_path))
 
     ctx = _DummyClosable()
     browser = _DummyClosable()
-    manager._context = ctx  # type: ignore[assignment]
-    manager._browser = browser  # type: ignore[assignment]
+    manager._context = cast(BrowserContext, ctx)
+    manager._browser = cast(Browser, browser)
 
     await manager._cleanup()
 
@@ -94,6 +104,23 @@ async def test_cleanup_closes_context_and_browser(tmp_path) -> None:
     assert browser.closed is True
     assert manager._context is None
     assert manager._browser is None
+
+
+@pytest.mark.asyncio
+async def test_cleanup_handles_missing_browser_or_context(tmp_path) -> None:
+    manager = BrowserManager(_settings(tmp_path))
+
+    ctx = _DummyClosable()
+    manager._context = cast(BrowserContext, ctx)
+    manager._browser = None
+    await manager._cleanup()
+    assert ctx.closed is True
+
+    browser = _DummyClosable()
+    manager._context = None
+    manager._browser = cast(Browser, browser)
+    await manager._cleanup()
+    assert browser.closed is True
 
 
 @pytest.mark.asyncio
@@ -114,5 +141,26 @@ async def test_new_page_sets_timeouts_and_closes_page(monkeypatch, tmp_path) -> 
         assert p is page
         assert page.default_timeout_ms == settings.page_load_timeout_ms
         assert page.default_nav_timeout_ms == settings.page_load_timeout_ms
+
+    assert page.closed is True
+
+
+@pytest.mark.asyncio
+async def test_new_page_closes_page_on_exception(monkeypatch, tmp_path) -> None:
+    settings = _settings(tmp_path)
+    manager = BrowserManager(settings)
+
+    page = _FakePage()
+    context = _FakeContext(page)
+
+    @asynccontextmanager
+    async def _fake_launch(self: Any, _stealth_config: object | None = None):
+        yield context
+
+    monkeypatch.setattr(BrowserManager, "launch", _fake_launch)
+
+    with pytest.raises(RuntimeError, match="boom"):
+        async with manager.new_page() as (_p, _human):
+            raise RuntimeError("boom")
 
     assert page.closed is True
