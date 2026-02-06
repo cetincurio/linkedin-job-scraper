@@ -1,6 +1,4 @@
-<!-- START doctoc generated TOC please keep comment here to allow auto update -->
-
-**Table of Contents**  *generated with [DocToc](https://github.com/thlorenz/doctoc)*
+**Table of Contents**
 
 - [CI/CD (2026) Overview](#cicd-2026-overview)
   - [Pipeline At A Glance](#pipeline-at-a-glance)
@@ -8,11 +6,11 @@
   - [Release Checklist (Small And Practical)](#release-checklist-small-and-practical)
   - [Triggers](#triggers)
   - [Workflows](#workflows)
-    - [CI - Lint](#ci---lint)
-    - [CI - Tests](#ci---tests)
-    - [CI - Build](#ci---build)
-    - [CI - Docs](#ci---docs)
-    - [CI - Integration](#ci---integration)
+    - [CI - Lint](#ci-lint)
+    - [CI - Tests](#ci-tests)
+    - [CI - Build](#ci-build)
+    - [CI - Docs](#ci-docs)
+    - [CI - Integration](#ci-integration)
   - [Status Checks](#status-checks)
   - [Caching Strategy](#caching-strategy)
   - [Performance & Minimalism Principles](#performance-minimalism-principles)
@@ -21,8 +19,6 @@
   - [Build System In `pyproject.toml` (2026 Best Practice)](#build-system-in-pyprojecttoml-2026-best-practice)
   - [Enabling PyPI / TestPyPI Publishing](#enabling-pypi-testpypi-publishing)
   - [Files](#files)
-
-<!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
 # CI/CD (2026) Overview
 
