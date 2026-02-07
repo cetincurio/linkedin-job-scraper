@@ -8,10 +8,10 @@ import pytest
 from playwright.async_api import Page
 from playwright.async_api import TimeoutError as PlaywrightTimeout
 
-from linkedin_scraper.browser.human import HumanBehavior
-from linkedin_scraper.models.job import JobSearchResult
-from linkedin_scraper.scrapers.search import JobSearchScraper
-from linkedin_scraper.storage.jobs import JobStorage
+from ljs.browser.human import HumanBehavior
+from ljs.models.job import JobSearchResult
+from ljs.scrapers.search import JobSearchScraper
+from ljs.storage.jobs import JobStorage
 from tests.test_fakes import FakeHuman, FakePage, settings_for_tests
 
 

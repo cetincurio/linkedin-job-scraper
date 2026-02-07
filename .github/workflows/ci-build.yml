@@ -97,7 +97,7 @@ jobs:
         run: uv pip install dist/*.whl
 
       - name: Import package
-        run: uv run --no-sync --no-default-groups python -c "import linkedin_scraper"
+        run: uv run --no-sync --no-default-groups python -c "import ljs"
 
       - name: Run minimal tests against installed package
         run: |

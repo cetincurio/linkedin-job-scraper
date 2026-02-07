@@ -5,9 +5,9 @@ import json
 
 import pytest
 
-from linkedin_scraper.config import Settings
-from linkedin_scraper.models.job import JobDetail, JobId, JobIdSource
-from linkedin_scraper.storage.jobs import JobStorage
+from ljs.config import Settings
+from ljs.models.job import JobDetail, JobId, JobIdSource
+from ljs.storage.jobs import JobStorage
 
 
 class TestJobStorage:

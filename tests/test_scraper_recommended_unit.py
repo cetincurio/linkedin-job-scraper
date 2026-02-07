@@ -7,11 +7,11 @@ from typing import Any, cast
 import pytest
 from playwright.async_api import Page
 
-from linkedin_scraper.browser.context import BrowserManager
-from linkedin_scraper.browser.human import HumanBehavior
-from linkedin_scraper.models.job import JobId, JobIdSource
-from linkedin_scraper.scrapers.recommended import RecommendedJobsScraper
-from linkedin_scraper.storage.jobs import JobStorage
+from ljs.browser.context import BrowserManager
+from ljs.browser.human import HumanBehavior
+from ljs.models.job import JobId, JobIdSource
+from ljs.scrapers.recommended import RecommendedJobsScraper
+from ljs.storage.jobs import JobStorage
 from tests.test_fakes import (
     FakeBrowserManager,
     FakeElement,

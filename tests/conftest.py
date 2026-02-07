@@ -7,8 +7,8 @@ from tempfile import TemporaryDirectory
 
 import pytest
 
-from linkedin_scraper.config import Settings
-from linkedin_scraper.storage.jobs import JobStorage
+from ljs.config import Settings
+from ljs.storage.jobs import JobStorage
 
 
 @pytest.fixture(scope="session")

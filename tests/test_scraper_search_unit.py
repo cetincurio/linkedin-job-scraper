@@ -7,11 +7,11 @@ from typing import Any, cast
 import pytest
 from playwright.async_api import Page
 
-from linkedin_scraper.browser.context import BrowserManager
-from linkedin_scraper.browser.human import HumanBehavior
-from linkedin_scraper.models.job import JobSearchResult
-from linkedin_scraper.scrapers.search import JobSearchScraper
-from linkedin_scraper.storage.jobs import JobStorage
+from ljs.browser.context import BrowserManager
+from ljs.browser.human import HumanBehavior
+from ljs.models.job import JobSearchResult
+from ljs.scrapers.search import JobSearchScraper
+from ljs.storage.jobs import JobStorage
 from tests.test_fakes import (
     FakeBrowserManager,
     FakeElement,
@@ -64,7 +64,9 @@ async def test_job_search_run_requires_string_keyword_and_country(tmp_path) -> N
     settings = settings_for_tests(tmp_path)
     scraper = JobSearchScraper(settings=settings, storage=JobStorage(settings))
     with pytest.raises(ValueError, match="keyword and country"):
-        await scraper.run(keyword=1, country="germany", max_pages=1)
+        # Exercise runtime validation while keeping static typing satisfied.
+        bad_keyword = cast(str, 1)
+        await scraper.run(keyword=bad_keyword, country="germany", max_pages=1)
 
 
 @pytest.mark.asyncio

@@ -1,7 +1,7 @@
 """Tests for scraper utility methods (no browser required)."""
 
-from linkedin_scraper.scrapers.base import BaseScraper
-from linkedin_scraper.scrapers.search import COUNTRY_GEO_IDS
+from ljs.scrapers.base import BaseScraper
+from ljs.scrapers.search import COUNTRY_GEO_IDS
 
 
 class TestBaseScraperInit:

@@ -29,7 +29,7 @@ assignees: ''
 A clear and concise description of the bug.
 
 ## Steps to Reproduce
-1. Run `linkedin-scraper ...`
+1. Run `ljs ...`
 2. ...
 3. See error
 

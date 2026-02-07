@@ -7,12 +7,12 @@ from typing import Any, cast
 import pytest
 from playwright.async_api import Page
 
-import linkedin_scraper.scrapers.base as base_module
-from linkedin_scraper.browser.context import BrowserManager
-from linkedin_scraper.browser.human import HumanBehavior
-from linkedin_scraper.models.job import JobDetail, JobId, JobIdSource
-from linkedin_scraper.scrapers.detail import JobDetailScraper
-from linkedin_scraper.storage.jobs import JobStorage
+import ljs.scrapers.base as base_module
+from ljs.browser.context import BrowserManager
+from ljs.browser.human import HumanBehavior
+from ljs.models.job import JobDetail, JobId, JobIdSource
+from ljs.scrapers.detail import JobDetailScraper
+from ljs.storage.jobs import JobStorage
 from tests.test_fakes import FakeBrowserManager, FakeHuman, FakePage, settings_for_tests
 
 
@@ -200,9 +200,7 @@ async def test_job_detail_scrape_job_detail_returns_none_when_content_missing(
 
     monkeypatch.setattr(scraper, "_safe_goto", _ok)
     monkeypatch.setattr(base_module, "time", base_module.time)
-    monkeypatch.setattr(
-        "linkedin_scraper.scrapers.detail.scraper.wait_for_job_content", _no_content
-    )
+    monkeypatch.setattr("ljs.scrapers.detail.scraper.wait_for_job_content", _no_content)
     monkeypatch.setattr(scraper, "_take_debug_screenshot", _shot)
 
     out = await scraper._scrape_job_detail(cast(Page, page), cast(HumanBehavior, FakeHuman()), "1")
@@ -226,7 +224,7 @@ async def test_job_detail_scrape_job_detail_success_sets_fields(monkeypatch, tmp
         pass
 
     monkeypatch.setattr(scraper, "_safe_goto", _ok)
-    monkeypatch.setattr("linkedin_scraper.scrapers.detail.scraper.wait_for_job_content", _loaded)
+    monkeypatch.setattr("ljs.scrapers.detail.scraper.wait_for_job_content", _loaded)
     monkeypatch.setattr(FakeHuman, "simulate_reading", _noop_read, raising=False)
 
     async def _title(*_a: Any, **_k: Any) -> str:
@@ -267,17 +265,17 @@ async def test_job_detail_scrape_job_detail_success_sets_fields(monkeypatch, tmp
     async def _raw(*_a: Any, **_k: Any) -> dict[str, Any]:
         return {"x": "y"}
 
-    monkeypatch.setattr("linkedin_scraper.scrapers.detail.scraper.extract_title", _title)
-    monkeypatch.setattr("linkedin_scraper.scrapers.detail.scraper.extract_company", _company)
-    monkeypatch.setattr("linkedin_scraper.scrapers.detail.scraper.extract_location", _loc)
-    monkeypatch.setattr("linkedin_scraper.scrapers.detail.scraper.extract_workplace_type", _wt)
-    monkeypatch.setattr("linkedin_scraper.scrapers.detail.scraper.extract_job_criteria", _criteria)
-    monkeypatch.setattr("linkedin_scraper.scrapers.detail.scraper.extract_description", _desc)
-    monkeypatch.setattr("linkedin_scraper.scrapers.detail.scraper.extract_posted_date", _posted)
-    monkeypatch.setattr("linkedin_scraper.scrapers.detail.scraper.extract_applicant_count", _apps)
-    monkeypatch.setattr("linkedin_scraper.scrapers.detail.scraper.extract_salary", _salary)
-    monkeypatch.setattr("linkedin_scraper.scrapers.detail.scraper.extract_skills", _skills)
-    monkeypatch.setattr("linkedin_scraper.scrapers.detail.scraper.extract_raw_sections", _raw)
+    monkeypatch.setattr("ljs.scrapers.detail.scraper.extract_title", _title)
+    monkeypatch.setattr("ljs.scrapers.detail.scraper.extract_company", _company)
+    monkeypatch.setattr("ljs.scrapers.detail.scraper.extract_location", _loc)
+    monkeypatch.setattr("ljs.scrapers.detail.scraper.extract_workplace_type", _wt)
+    monkeypatch.setattr("ljs.scrapers.detail.scraper.extract_job_criteria", _criteria)
+    monkeypatch.setattr("ljs.scrapers.detail.scraper.extract_description", _desc)
+    monkeypatch.setattr("ljs.scrapers.detail.scraper.extract_posted_date", _posted)
+    monkeypatch.setattr("ljs.scrapers.detail.scraper.extract_applicant_count", _apps)
+    monkeypatch.setattr("ljs.scrapers.detail.scraper.extract_salary", _salary)
+    monkeypatch.setattr("ljs.scrapers.detail.scraper.extract_skills", _skills)
+    monkeypatch.setattr("ljs.scrapers.detail.scraper.extract_raw_sections", _raw)
 
     out = await scraper._scrape_job_detail(cast(Page, page), cast(HumanBehavior, FakeHuman()), "1")
     assert out is not None

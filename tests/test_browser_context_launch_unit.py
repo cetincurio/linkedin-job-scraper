@@ -12,9 +12,9 @@ from typing import Any, cast
 import pytest
 from playwright.async_api import Page
 
-import linkedin_scraper.browser.context as context_module
-from linkedin_scraper.browser.context import BrowserManager
-from linkedin_scraper.config import Settings
+import ljs.browser.context as context_module
+from ljs.browser.context import BrowserManager
+from ljs.config import Settings
 
 
 def _settings(tmp_path) -> Settings:

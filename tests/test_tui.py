@@ -8,7 +8,7 @@ import pytest
 from textual.binding import Binding, BindingType
 from textual.widgets import DataTable, Input, Select, Static
 
-from linkedin_scraper.tui import LinkedInScraperApp
+from ljs.tui import LinkedInScraperApp
 
 
 @pytest.fixture

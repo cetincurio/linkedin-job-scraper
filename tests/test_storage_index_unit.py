@@ -5,8 +5,8 @@ from __future__ import annotations
 import gc
 from pathlib import Path
 
-from linkedin_scraper.models.job import JobId, JobIdSource
-from linkedin_scraper.storage.jobs.index import JobIndex
+from ljs.models.job import JobId, JobIdSource
+from ljs.storage.jobs.index import JobIndex
 
 
 class TestJobIndex:

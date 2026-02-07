@@ -5,9 +5,9 @@ from typing import Any, cast
 
 from playwright.async_api import BrowserContext, Page
 
-from linkedin_scraper.browser import stealth as stealth_module
-from linkedin_scraper.browser.context import BrowserManager
-from linkedin_scraper.browser.stealth import (
+from ljs.browser import stealth as stealth_module
+from ljs.browser.context import BrowserManager
+from ljs.browser.stealth import (
     USER_AGENTS,
     VIEWPORTS,
     StealthConfig,
@@ -176,7 +176,7 @@ class TestBrowserManagerHooks:
             page.injected = True
             injected.set()
 
-        monkeypatch.setattr("linkedin_scraper.browser.context.inject_evasion_scripts", _fake_inject)
+        monkeypatch.setattr("ljs.browser.context.inject_evasion_scripts", _fake_inject)
 
         page = DummyNewPage()
         manager._on_new_page_sync(cast(Page, page))

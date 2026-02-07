@@ -1,6 +1,6 @@
 """Tests for scraper modules."""
 
-from linkedin_scraper.scrapers.base import BaseScraper
+from ljs.scrapers.base import BaseScraper
 
 
 class TestBaseScraper:

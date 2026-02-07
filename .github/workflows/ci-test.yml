@@ -63,7 +63,7 @@ jobs:
       - name: Run tests with coverage
         run: |
           uv run --no-sync --locked --no-default-groups pytest tests/ \
-            --cov=src/linkedin_scraper \
+            --cov=src/ljs \
             --cov-report=xml \
             --cov-report=term-missing \
             -m "not integration"

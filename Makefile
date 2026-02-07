@@ -64,7 +64,7 @@ test:
 
 # Run tests with coverage
 test-cov:
-	$(UV_RUN_ACTIVE) pytest tests/ --cov=src/linkedin_scraper --cov-report=html --cov-report=term
+	$(UV_RUN_ACTIVE) pytest tests/ --cov=src/ljs --cov-report=html --cov-report=term
 
 # Run linter
 lint:

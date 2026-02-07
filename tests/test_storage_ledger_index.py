@@ -8,10 +8,10 @@ from pathlib import Path
 
 import pytest
 
-from linkedin_scraper.models.job import JobDetail, JobId, JobIdSource
-from linkedin_scraper.storage.jobs.index import JobIndex
-from linkedin_scraper.storage.jobs.ledger import LedgerWriter
-from linkedin_scraper.storage.jobs.storage import JobStorage
+from ljs.models.job import JobDetail, JobId, JobIdSource
+from ljs.storage.jobs.index import JobIndex
+from ljs.storage.jobs.ledger import LedgerWriter
+from ljs.storage.jobs.storage import JobStorage
 
 
 class TestLedgerWriter:

@@ -18,55 +18,55 @@
 
 ### Scrapers
 
-::: linkedin_scraper.scrapers.search.JobSearchScraper
+::: ljs.scrapers.search.JobSearchScraper
     options:
       show_source: false
       heading_level: 3
 
-::: linkedin_scraper.scrapers.detail.JobDetailScraper
+::: ljs.scrapers.detail.JobDetailScraper
     options:
       show_source: false
       heading_level: 3
 
-::: linkedin_scraper.scrapers.recommended.RecommendedJobsScraper
+::: ljs.scrapers.recommended.RecommendedJobsScraper
     options:
       show_source: false
       heading_level: 3
 
 ### Models
 
-::: linkedin_scraper.models.job.JobId
+::: ljs.models.job.JobId
     options:
       show_source: false
       heading_level: 3
 
-::: linkedin_scraper.models.job.JobDetail
+::: ljs.models.job.JobDetail
     options:
       show_source: false
       heading_level: 3
 
 ### Browser
 
-::: linkedin_scraper.browser.context.BrowserManager
+::: ljs.browser.context.BrowserManager
     options:
       show_source: false
       heading_level: 3
 
-::: linkedin_scraper.browser.human.HumanBehavior
+::: ljs.browser.human.HumanBehavior
     options:
       show_source: false
       heading_level: 3
 
 ### Storage
 
-::: linkedin_scraper.storage.jobs.JobStorage
+::: ljs.storage.jobs.JobStorage
     options:
       show_source: false
       heading_level: 3
 
 ### Configuration
 
-::: linkedin_scraper.config.Settings
+::: ljs.config.Settings
     options:
       show_source: false
       heading_level: 3

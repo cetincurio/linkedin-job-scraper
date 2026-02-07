@@ -2,7 +2,7 @@
 
 from datetime import datetime
 
-from linkedin_scraper.models.job import JobDetail, JobId, JobIdSource, JobSearchResult
+from ljs.models.job import JobDetail, JobId, JobIdSource, JobSearchResult
 
 
 class TestJobId:

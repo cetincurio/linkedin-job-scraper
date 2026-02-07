@@ -62,7 +62,7 @@ LINKEDIN_SCRAPER_LOG_DIR=logs
 ## Programmatic Configuration
 
 ```python
-from linkedin_scraper.config import Settings
+from ljs.config import Settings
 
 settings = Settings(
     headless=True,

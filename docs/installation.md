@@ -78,10 +78,10 @@ playwright install chromium
 
 ```bash
 # Check CLI is working
-linkedin-scraper --version
+ljs --version
 
 # Show available commands
-linkedin-scraper --help
+ljs --help
 ```
 
 ## Development Installation

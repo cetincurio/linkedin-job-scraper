@@ -2,7 +2,7 @@
 
 from pathlib import Path
 
-from linkedin_scraper.config import Settings, get_settings
+from ljs.config import Settings, get_settings
 
 
 class TestSettings:

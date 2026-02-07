@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import os
 
-from linkedin_scraper.consent import ACK_ENV, is_acknowledged_env, set_acknowledged_env
+from ljs.consent import ACK_ENV, is_acknowledged_env, set_acknowledged_env
 
 
 def test_set_acknowledged_env_sets_flag() -> None:

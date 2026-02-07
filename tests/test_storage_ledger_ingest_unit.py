@@ -7,8 +7,8 @@ from pathlib import Path
 
 import pytest
 
-from linkedin_scraper.models.job import JobId, JobIdSource
-from linkedin_scraper.storage.jobs.storage import JobStorage
+from ljs.models.job import JobId, JobIdSource
+from ljs.storage.jobs.storage import JobStorage
 
 
 class TestJobStorageLedgers:

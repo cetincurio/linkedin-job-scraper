@@ -4,10 +4,10 @@ from __future__ import annotations
 
 import pytest
 
-from linkedin_scraper.scrapers.detail import JobDetailScraper
-from linkedin_scraper.scrapers.recommended import RecommendedJobsScraper
-from linkedin_scraper.scrapers.search import JobSearchScraper
-from linkedin_scraper.storage.jobs import JobStorage
+from ljs.scrapers.detail import JobDetailScraper
+from ljs.scrapers.recommended import RecommendedJobsScraper
+from ljs.scrapers.search import JobSearchScraper
+from ljs.storage.jobs import JobStorage
 from tests.test_fakes import settings_for_tests
 
 

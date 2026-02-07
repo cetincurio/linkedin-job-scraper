@@ -9,8 +9,8 @@ from typing import Any, cast
 import pytest
 from playwright.async_api import Locator, Page
 
-from linkedin_scraper.browser.human import HumanBehavior
-from linkedin_scraper.config import Settings
+from ljs.browser.human import HumanBehavior
+from ljs.config import Settings
 
 
 class _FakeMouse:

@@ -4,8 +4,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from linkedin_scraper.models.job import JobId, JobIdSource
-from linkedin_scraper.storage.jobs.ledger import LedgerWriter
+from ljs.models.job import JobId, JobIdSource
+from ljs.storage.jobs.ledger import LedgerWriter
 
 
 class TestLedgerWriter:

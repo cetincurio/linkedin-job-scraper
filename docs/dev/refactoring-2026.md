@@ -413,7 +413,7 @@ uv run --with deptry deptry src/
 | `.gitignore` | Reorganized with clear sections |
 | `.pre-commit-config.yaml` | Simplified to ruff-only |
 | `mkdocs.yml` | Added custom fonts |
-| `src/linkedin_scraper/cli/app.py` | CLI entry point, modularized commands |
+| `src/ljs/cli/app.py` | CLI entry point, modularized commands |
 
 ---
 

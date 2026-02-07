@@ -7,9 +7,9 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-from linkedin_scraper.browser.human import HumanBehavior
-from linkedin_scraper.config import Settings
-from linkedin_scraper.scrapers.base import BaseScraper
+from ljs.browser.human import HumanBehavior
+from ljs.config import Settings
+from ljs.scrapers.base import BaseScraper
 
 
 def settings_for_tests(tmp_path: Path) -> Settings:

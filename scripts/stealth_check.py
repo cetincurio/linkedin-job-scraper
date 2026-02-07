@@ -8,9 +8,9 @@ from __future__ import annotations
 
 import asyncio
 
-from linkedin_scraper.browser.context import BrowserManager
-from linkedin_scraper.config import get_settings
-from linkedin_scraper.logging_config import get_logger, setup_logging
+from ljs.browser.context import BrowserManager
+from ljs.config import get_settings
+from ljs.logging_config import get_logger, setup_logging
 
 
 logger = get_logger(__name__)

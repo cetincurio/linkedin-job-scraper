@@ -160,7 +160,7 @@ uv run ty check src/
 
 ```python
 from pathlib import Path
-from linkedin_scraper.logging_config import get_logger
+from ljs.logging_config import get_logger
 
 logger = get_logger(__name__)
 
@@ -198,7 +198,7 @@ python3 scripts/update_toc.py
 uv run pytest
 
 # Run with coverage
-uv run pytest --cov=src/linkedin_scraper --cov-report=html
+uv run pytest --cov=src/ljs --cov-report=html
 
 # Run specific test file
 uv run pytest tests/test_models.py
@@ -220,7 +220,7 @@ uv run pytest -m "not integration"
 ```python
 import pytest
 
-from linkedin_scraper.models.job import JobId, JobIdSource
+from ljs.models.job import JobId, JobIdSource
 
 
 class TestJobId:

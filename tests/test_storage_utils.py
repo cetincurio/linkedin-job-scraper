@@ -1,6 +1,6 @@
 """Tests for storage utility functions."""
 
-from linkedin_scraper.storage.jobs import _build_ml_text, _normalize_whitespace, _redact_pii
+from ljs.storage.jobs import _build_ml_text, _normalize_whitespace, _redact_pii
 
 
 class TestNormalizeWhitespace:

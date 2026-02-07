@@ -25,7 +25,7 @@
 Search LinkedIn for jobs by keyword and country:
 
 ```bash
-linkedin-scraper search "python developer" germany --max-pages 10
+ljs search "python developer" germany --max-pages 10
 ```
 
 Options:
@@ -39,16 +39,16 @@ Scrape detailed information from job pages:
 
 ```bash
 # Scrape first 10 unscraped jobs
-linkedin-scraper scrape --limit 10
+ljs scrape --limit 10
 
 # Scrape from search results only
-linkedin-scraper scrape --source search --limit 5
+ljs scrape --source search --limit 5
 
 # Scrape a specific job
-linkedin-scraper scrape --job-id 1234567890
+ljs scrape --job-id 1234567890
 
 # Disable recommendation extraction
-linkedin-scraper scrape --limit 10 --no-recommended
+ljs scrape --limit 10 --no-recommended
 ```
 
 ### Loop Mode (All Features)
@@ -56,19 +56,19 @@ linkedin-scraper scrape --limit 10 --no-recommended
 Run search and scrape in cycles:
 
 ```bash
-linkedin-scraper loop "data engineer" netherlands --cycles 5
+ljs loop "data engineer" netherlands --cycles 5
 ```
 
 ### View Statistics
 
 ```bash
-linkedin-scraper stats
+ljs stats
 ```
 
 ### List Supported Countries
 
 ```bash
-linkedin-scraper countries
+ljs countries
 ```
 
 ## TUI (Terminal User Interface)
@@ -76,7 +76,7 @@ linkedin-scraper countries
 Launch the interactive interface:
 
 ```bash
-linkedin-scraper tui
+ljs tui
 ```
 
 ### Keyboard Shortcuts
@@ -92,9 +92,9 @@ linkedin-scraper tui
 
 ```python
 import asyncio
-from linkedin_scraper.scrapers.search import JobSearchScraper
-from linkedin_scraper.scrapers.detail import JobDetailScraper
-from linkedin_scraper.config import get_settings
+from ljs.scrapers.search import JobSearchScraper
+from ljs.scrapers.detail import JobDetailScraper
+from ljs.config import get_settings
 
 async def main():
     settings = get_settings()

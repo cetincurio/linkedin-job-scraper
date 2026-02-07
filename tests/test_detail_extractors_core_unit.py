@@ -7,8 +7,8 @@ from typing import cast
 import pytest
 from playwright.async_api import Page
 
-from linkedin_scraper.scrapers.base import BaseScraper
-from linkedin_scraper.scrapers.detail.extractors import (
+from ljs.scrapers.base import BaseScraper
+from ljs.scrapers.detail.extractors import (
     extract_applicant_count,
     extract_company,
     extract_location,

@@ -35,13 +35,13 @@ uv sync
 uv run playwright install chromium
 
 # Search for jobs
-linkedin-scraper search "python developer" germany
+ljs search "python developer" germany
 
 # Scrape job details
-linkedin-scraper scrape --limit 10
+ljs scrape --limit 10
 
 # Launch interactive TUI
-linkedin-scraper tui
+ljs tui
 ```
 
 ## Module Layout

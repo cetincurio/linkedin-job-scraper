@@ -8,8 +8,8 @@ from typing import Any, cast
 import pytest
 from playwright.async_api import Browser, BrowserContext
 
-from linkedin_scraper.browser.context import BrowserManager
-from linkedin_scraper.config import Settings
+from ljs.browser.context import BrowserManager
+from ljs.config import Settings
 
 
 class _DummyClosable:

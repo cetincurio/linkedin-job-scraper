@@ -7,7 +7,7 @@ import tempfile
 
 from typer.testing import CliRunner
 
-from linkedin_scraper.cli import app
+from ljs.cli import app
 
 
 runner = CliRunner()

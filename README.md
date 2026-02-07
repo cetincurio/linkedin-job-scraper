@@ -109,7 +109,7 @@ uv run playwright install chromium
 # uv run --active playwright install chromium
 
 # Run the CLI
-uv run linkedin-scraper --help
+uv run ljs --help
 ```
 
 ### Alternative: pip
@@ -130,30 +130,30 @@ playwright install chromium
 
 ```bash
 # Show help
-linkedin-scraper --help
+ljs --help
 
 # Feature 1: Search for jobs
-linkedin-scraper search "python developer" germany --max-pages 10
+ljs search "python developer" germany --max-pages 10
 
 # Feature 2 & 3: Scrape job details (with recommendations)
-linkedin-scraper scrape --limit 10
-linkedin-scraper scrape --job-id 1234567890
+ljs scrape --limit 10
+ljs scrape --job-id 1234567890
 
 # Run all features in a loop
-linkedin-scraper loop "data engineer" netherlands --cycles 5
+ljs loop "data engineer" netherlands --cycles 5
 
 # Show statistics
-linkedin-scraper stats
+ljs stats
 
 # List supported countries
-linkedin-scraper countries
+ljs countries
 ```
 
 ### TUI (Terminal User Interface)
 
 ```bash
 # Launch interactive TUI
-linkedin-scraper tui
+ljs tui
 ```
 
 The TUI provides:
@@ -167,7 +167,7 @@ The TUI provides:
 ### Running as Module
 
 ```bash
-python -m linkedin_scraper search "software engineer" "united states"
+python -m ljs search "software engineer" "united states"
 ```
 
 ## Configuration
@@ -214,7 +214,7 @@ linkedin-job-scraper/
 │   ├── job_details/        # Job detail JSON files
 │   └── screenshots/        # Debug screenshots
 ├── logs/                   # Log files
-└── src/linkedin_scraper/
+└── src/ljs/
     ├── __init__.py
     ├── __main__.py         # Module entry point
     ├── consent.py          # Shared consent helpers

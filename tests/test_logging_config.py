@@ -3,7 +3,7 @@
 import logging
 from pathlib import Path
 
-from linkedin_scraper import logging_config
+from ljs import logging_config
 
 
 class TestSetupLogging:
